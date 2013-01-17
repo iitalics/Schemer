@@ -1,0 +1,137 @@
+#!/usr/bin/python
+
+import optparse, json, os, sys
+
+
+COLORS = True
+
+
+
+################### Set up colors ######################
+if COLORS:
+	Red = "\x1b[31m"
+	Green = "\x1b[32m"
+	Yellow = "\x1b[33m"
+	Blue = "\x1b[34m"
+	Purple = "\x1b[35m"
+	Cyan = "\x1b[36m"
+	White = "\x1b[37m"
+	Reset = "\x1b[0m"
+else:
+	Red = Green = Yellow = ""
+	Blue = Cyan = Purple = ""
+	Reset = White = Gray = ""
+
+
+
+def die (m):
+	sys.stderr.write("%s %s %s\n" % (Red, m, Reset))
+	sys.exit(-1)
+
+
+################### Parse command line options ######################
+parser = optparse.OptionParser()
+
+parser.add_option("-b", action="store_true",
+	dest="dobackup", help="Back up after generating makefile",
+	default=False)
+parser.add_option("-c", metavar="CONFIG",
+	dest="config", help="Select config file",
+	default="makeconfig.js")
+parser.add_option("-w", metavar="FOLDER",
+	dest="wdir", help="Folder to work in",
+	default="./")
+
+(options, args) = parser.parse_args()
+
+
+################### Load JSON config ######################
+defaults = {
+	"COMPILERS" : {
+		".c" : "gcc",
+		".cpp" : "g++"
+	},
+	"LINKER" : "gcc",
+	"CFLAGS" : "",
+	"LFLAGS" : "",
+	"OBJFOLDER" : "obj",
+	"OUTPUT" : "a.out",
+	"SRCFILES" : [ ".c", ".cpp" ],
+	"BACKUP" : "backup.tar.bz2",
+	"BACKUPFLAGS" : "-cjf"
+}
+if not os.path.exists(options.config):
+	config = defaults
+	die("Config file '%s' not found" % options.config)
+else:
+	config = json.load(file(options.config))
+def get (n):
+		if n in config:
+			return config[n]
+		return defaults[n]
+
+
+outputText = ""
+filesGenerated = 0
+
+def appendLine (line):
+	global outputText
+	outputText += "%s\n" % line
+
+
+def findFiles ():
+	result = []
+	for f in os.listdir(options.wdir):
+		(filename, ext) = os.path.splitext(f)
+		
+		if ext in get("SRCFILES"):
+			result += [(filename, ext)]
+	return result
+
+def objectList ():
+	result = []
+	for (name, ext) in findFiles():
+		result += ["%s/%s.o" % (get("OBJFOLDER"), name)]
+	return result
+
+def compiler (ext):
+	compilers = get("COMPILERS")
+	if ext in compilers:
+		return compilers[ext]
+	die("Cannot find compiler for %s file" % ext)
+
+def generateFiles ():
+	global filesGenerated
+	filesGenerated = 0
+	for (name, ext) in findFiles():
+		obj = "%s/%s.o" % (get("OBJFOLDER"), name)
+		fullname = "%s%s" % (name, ext)
+		
+		appendLine("%s: %s" % (obj, fullname))
+		appendLine("\t%s %s %s -c -o %s" % (compiler(ext), get("CFLAGS"), fullname, obj))
+		filesGenerated += 1
+
+
+
+def generateMakefile ():
+	appendLine("all: %s" % get("OUTPUT"))
+	generateFiles()
+	objs = " ".join(objectList())
+	appendLine("%s: %s" % (get("OUTPUT"), objs))
+	appendLine("\t%s %s %s -o %s" % (get("LINKER"), objs, get("LFLAGS"), get("OUTPUT")))
+	appendLine("clean:")
+	appendLine("\trm -f obj/* %s" % get("OUTPUT"))
+	appendLine("rebuild: clean all")
+	
+	os.system("rm -rf %s %s %s;mkdir %s" % (get("OUTPUT"), get("OBJFOLDER"), get("BACKUP"), get("OBJFOLDER")))
+
+
+
+generateMakefile()
+file("%s/Makefile" % (options.wdir), "w").write(outputText)
+print "%s Generate makefile for %d file(s) %s" % (Green, filesGenerated, Reset)
+
+if options.dobackup:
+	sys.stdout.write("%s Backing up files... " % Cyan);
+	os.system("rm -rf %s && tar %s %s *" % (get("BACKUP"), get("BACKUPFLAGS"), get("BACKUP")))
+	print "done!" + Reset

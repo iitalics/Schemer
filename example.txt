@@ -1,0 +1,9 @@
+(define (sqr x)
+  (* x x))
+(define pi 3.141592)
+
+(define (area r)
+  (* (sqr r)
+     pi))
+
+(area 4)
