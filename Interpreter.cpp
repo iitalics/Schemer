@@ -50,9 +50,9 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 		{
 			std::string name(((VariableToken*)t)->Name);
 			
-			if (name == "true") return new BooleanValue(true);
-			if (name == "false") return new BooleanValue(false);
-			if (name == "nil" || name == "null") return new NullValue();
+			if (name == "#t") return new BooleanValue(true);
+			if (name == "#f") return new BooleanValue(false);
+			if (name == "nil") return new NullValue();
 			
 			if (scope != NULL && scope->Contains(name))
 				return scope->Get(name);

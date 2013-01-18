@@ -58,12 +58,12 @@ SValue* NativeFunctionValue::Call (Interpreter* t, std::vector<SValue*> args)
 std::string NormalFunctionValue::Name ()
 {
 	std::stringstream ss; 
-	ss << "{function " << ((VariableToken*)Arguments->Function)->Name << "}";
+	ss << "[Function " << ((VariableToken*)Arguments->Function)->Name << "]";
 	return ss.str();
 }
 std::string NativeFunctionValue::Name ()
 {
-	return "{native function}";
+	return "[Native function]";
 }
 
 
@@ -131,7 +131,7 @@ std::string SValue::String ()
 		}
 		
 		case ValueTypeBoolean:
-			return (((BooleanValue*)this)->Value) ? "true" : "false";
+			return (((BooleanValue*)this)->Value) ? "#t" : "#f";
 		
 		default: break;
 	}
