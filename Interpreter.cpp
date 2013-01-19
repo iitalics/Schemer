@@ -106,6 +106,22 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 				if (requireOutput)
 					return result;
 			}
+			else if (firstName == "if")
+			{
+				if (e->Arguments.size() != 3)
+					die("Invalid 'if' syntax, expected 3 arguments")
+				
+				SValue* condition = Evaluate(e->Arguments[0], scope, true);
+				if (condition->Type != ValueTypeBoolean)
+				{
+					die("Invalid 'if' statement, condition is not boolean type");
+				}
+				
+				if (((BooleanValue*)condition)->Value)
+					return Evaluate(e->Arguments[1], scope, true);
+				else
+					return Evaluate(e->Arguments[2], scope, true);
+			}
 			else
 			{
 				FunctionValue* f = (FunctionValue*)Evaluate(e->Function, scope);
