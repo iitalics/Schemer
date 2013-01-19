@@ -55,6 +55,7 @@ static void rpl ()
 		parser.Parse(line);
 		interp.LoadParser(parser);
 		interp.Run();
+		interp.GarbageCollect();
 		
 		while (interp >> output)
 			std::cout << output << std::endl;

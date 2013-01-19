@@ -30,8 +30,10 @@ SValue* PairValue::Copy () { return new PairValue(Head->Copy(), Tail->Copy()); }
 
 
 /* **************** FunctionValue *************** */
-NormalFunctionValue::NormalFunctionValue (ExpressionToken* args, Token* body) : Arguments(args), Body(body)
+NormalFunctionValue::NormalFunctionValue (ExpressionToken* args, Token* body)
+	: Arguments(args), Body(body)
 {
+	fType = FunctionTypeNormal;
 	Type = ValueTypeFunction;
 }
 SValue* NormalFunctionValue::Call (Interpreter* t, std::vector<SValue*>& args)
@@ -44,8 +46,10 @@ SValue* NormalFunctionValue::Call (Interpreter* t, std::vector<SValue*>& args)
 SValue* NormalFunctionValue::Copy () { return new NormalFunctionValue(Arguments, Body); }
 
 
-NativeFunctionValue::NativeFunctionValue (NativeFunctionHandler h) : Handler(h)
+NativeFunctionValue::NativeFunctionValue (NativeFunctionHandler h)
+	: Handler(h)
 {
+	fType = FunctionTypeNative;
 	Type = ValueTypeFunction;
 }
 SValue* NativeFunctionValue::Copy () { return new NativeFunctionValue(Handler); }

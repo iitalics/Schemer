@@ -16,10 +16,22 @@ public:
 	VariableToken* CreateVariableToken (std::string s);
 	ExpressionToken* CreateExpressionToken (std::vector<Token*> tokens);
 	
+	bool Empty ();
+	
+	void GarbageCollectBegin ();
+	void GarbageCollectEnd ();
+	void GarbageCollectProcess (Token* t);
+	
 private:
 	std::vector<NumberToken*> numbers;
 	std::vector<VariableToken*> variables;
 	std::vector<Token*> others;
+	
+	std::vector<Token*> gcLeft;
+	std::vector<Token*> gcFound;
+	bool contains (Token* t);
+
+//	std::string name;
 };
 
 class Parser

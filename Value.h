@@ -14,6 +14,12 @@ enum ValueType
 	ValueTypeBoolean = 4,
 	ValueTypeNull = 0
 };
+enum FunctionType
+{
+	FunctionTypeNative = 1,
+	FunctionTypeNormal = 2,
+	FunctionTypeLambda = 3
+};
 
 
 struct SValue
@@ -59,6 +65,8 @@ struct PairValue : public SValue
 };
 struct FunctionValue : public SValue
 {
+	FunctionType fType;
+	
 	virtual SValue* Call (Interpreter*, std::vector<SValue*>&) = 0;
 	virtual std::string Name () = 0;
 };

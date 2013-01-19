@@ -4,12 +4,21 @@
 
 
 //  TokenFactory <
-TokenFactory::TokenFactory () {}
+TokenFactory::TokenFactory ()
+{
+	srand(time(NULL));
+	/*std::stringstream ss;
+	for (int i = 0; i < 6; i++)
+		ss << (char)('a' + (rand() % 26));
+	name = ss.str();*/
+	
+}
 TokenFactory::~TokenFactory ()
 {
 	for (auto i = numbers.begin(); i != numbers.end(); ++i) delete *i;
 	for (auto i = variables.begin(); i != variables.end(); ++i) delete *i;
 	for (auto i = others.begin(); i != others.end(); ++i) delete *i;
+	
 }
 NumberToken* TokenFactory::CreateNumberToken (Number n)
 {
@@ -233,4 +242,61 @@ std::vector<Token*> Parser::FlushTokens ()
 	std::vector<Token*> p = parsed;
 	parsed.clear();
 	return p;
+}
+
+
+
+
+/*============ Garbage collection ===============*/
+
+
+void TokenFactory::GarbageCollectBegin ()
+{
+	gcLeft.clear();
+	gcFound.clear();
+	
+	for (auto i = numbers.begin();   i != numbers.end();   i++) gcLeft.push_back(*i);
+	for (auto i = variables.begin(); i != variables.end(); i++) gcLeft.push_back(*i);
+	for (auto i = others.begin();    i != others.end();    i++) gcLeft.push_back(*i);
+	
+	numbers.clear(); variables.clear(); others.clear();
+}
+void TokenFactory::GarbageCollectProcess (Token* t)
+{
+	for (auto i = gcLeft.begin(); i != gcLeft.end(); i++)
+	{
+		if ((*i) == t)
+		{
+			gcLeft.erase(i);
+			gcFound.push_back(t);
+			return;
+		}
+	}
+}
+void TokenFactory::GarbageCollectEnd ()
+{
+	/*for (auto i = gcLeft.begin(); i != gcLeft.end(); i++)
+	{
+		std::cout << "destroying token "; displayToken(*i);
+	}*/
+	for (auto i = gcLeft.begin(); i != gcLeft.end(); i++)
+		delete *i;
+	gcLeft.clear();
+	
+	for (auto i = gcFound.cbegin(); i != gcFound.cend(); i++)
+	{
+		switch ((*i)->Type)
+		{
+			case TokenTypeNumber:   numbers.push_back((NumberToken*)*i); break;
+			case TokenTypeVariable: variables.push_back((VariableToken*)*i); break;
+			default: others.push_back(*i);
+		}
+		//std::cout << "keeping token "; displayToken(*i);
+	}
+	gcFound.clear();
+}
+
+bool TokenFactory::Empty ()
+{
+	return numbers.empty() && variables.empty() && others.empty();
 }

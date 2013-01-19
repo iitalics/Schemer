@@ -16,8 +16,11 @@ Interpreter::Interpreter ()
 
 Interpreter::~Interpreter ()
 {
+	//std::cout << "going to free " << factories.size() << " factories" << std::endl;
 	for (auto i = factories.begin(); i != factories.end(); ++i)
+	{
 		delete *i;
+	}
 }
 bool Interpreter::operator >> (std::string& s)
 {
@@ -35,7 +38,11 @@ void Interpreter::LoadParser (Parser& p)
 	for (auto i = parsed.begin(); i != parsed.end(); ++i)
 		tokens.push(*i);
 		
-	//TokenFactory* factory = p.GetFactory();
+	TokenFactory* factory = p.ObtainFactory();
+	if (factory != NULL)
+	{
+		factories.push_back(factory);
+	}
 }
 
 
@@ -171,6 +178,71 @@ void Interpreter::Run ()
 	}
 }
 
+void Interpreter::findAllTokens (Token* root, std::vector<Token*>* list)
+{
+	list->push_back(root);
+	if (root->Type == TokenTypeExpression)
+	{
+		ExpressionToken* e = (ExpressionToken*)root;
+		
+		findAllTokens(e->Function, list);
+		for (auto i = e->Arguments.cbegin(); i != e->Arguments.cend(); i++)
+			findAllTokens(*i, list);
+	}
+}
+
+
+void Interpreter::GarbageCollect ()
+{
+	if (factories.empty()) return;
+	
+	for (auto i = factories.begin(); i != factories.end(); i++)
+		(*i)->GarbageCollectBegin();
+	
+	
+	std::vector<Token*> allTokens;
+	std::vector<SValue*> allValues = globalScope->AllValues();
+	for (auto s = allValues.cbegin(); s != allValues.cend(); s++)
+	{
+		//std::cout << "searching " << (*s)->String() << std::endl;
+		if ((*s)->Type == ValueTypeFunction)
+		{
+			NormalFunctionValue* f = (NormalFunctionValue*)*s;
+			if (f->fType == FunctionTypeNormal)
+			{
+				findAllTokens(f->Arguments, &allTokens);
+				findAllTokens(f->Body, &allTokens);
+			}
+		}
+	}
+	allValues.clear();
+	
+	/*std::cout << "all tokens: " << std::endl;
+	for (unsigned int i = 0; i < allTokens.size(); i++)
+	{
+		displayToken(allTokens[i]);
+	}*/
+	
+	for (auto t = allTokens.begin(); t != allTokens.end(); t++)
+	{
+		for (auto i = factories.begin(); i != factories.end(); i++)
+			(*i)->GarbageCollectProcess(*t);
+	}
+	
+	for (auto i = factories.begin(); i != factories.end(); i++)
+	{
+		(*i)->GarbageCollectEnd();
+		
+		if ((*i)->Empty())
+		{
+			//std::cout << "ridding the whole of factory " << (*i)->name << std::endl;
+			delete *i;
+			factories.erase(i);
+			i--;
+		}
+	}
+}
+
 
 
 
@@ -181,7 +253,7 @@ void Interpreter::Run ()
 
 
 Scope::Scope () {}
-Scope::Scope (ExpressionToken* argl, std::vector<SValue*> args) { Bind(argl, args); }
+Scope::Scope (ExpressionToken* argl, std::vector<SValue*>& args) { Bind(argl, args); }
 Scope::Scope (const Scope& s) { Bind(s); }
 Scope::~Scope ()
 {
@@ -196,7 +268,7 @@ void Scope::Bind (const Scope& s)
 	for (auto i = s.data.begin(); i != s.data.end(); ++i)
 		data[i->first] = i->second->Copy();
 }
-void Scope::Bind (ExpressionToken* e, std::vector<SValue*> args)
+void Scope::Bind (ExpressionToken* e, std::vector<SValue*>& args)
 {
 	std::vector<std::string> names = e->Names(false);
 	unsigned int len = names.size();
@@ -226,4 +298,11 @@ void Scope::Set (std::string key, SValue* value)
 bool Scope::Contains (std::string key)
 {
 	return data.find(key) != data.end();
+}
+std::vector<SValue*> Scope::AllValues ()
+{
+	std::vector<SValue*> t;
+	for (auto i = data.begin(); i != data.end(); i++)
+		t.push_back(i->second);
+	return t;
 }
