@@ -4,73 +4,133 @@
 #include "Token.h"
 #include "Interpreter.h"
 
+extern "C"
+{
+	#include "argvments.h"
+}
 
 
 #define VERSION "1.0"
 
 
 
+
+#define BANNER "\
+\n\
+ :::::::::::\n\
+   Schemer\n\
+ :::::::::::\n\n"
+
+
+
 /*
  * 
- * Give file to read as first argument, or give no arguments for RPL
+ * Give files to read as arguments, or give no arguments for RPL
  * 
  */
 
 
 
+static bool doing_rpl = true;
+static std::stringstream fileInput;
 
-int main (int argc, char** argv)
+
+
+static void rpl ()
 {
-	
-	std::string line;
-	
 	Parser parser;
 	Interpreter interp;
 	
-	if (argc > 1)
-	{
-		std::fstream file(argv[1]);
-		if (file.good())
-		{
-			parser.Parse(file);
-			interp.LoadParser(parser);
-			interp.Run();
-			
-			while (interp >> line)
-				std::cout << line << std::endl;
-			
-			return EXIT_SUCCESS;
-		}
-		else
-		{
-			std::cerr << "\x1b[31mUnable to open file '" << argv[1] << "'" << std::endl;
-			return EXIT_FAILURE;
-		}
-	}
+	std::string line;
+	std::string output;
 	
-	
-	std::cout << std::endl
-	          << " ::::::::::::::::::::::::::" << std::endl
-	          << "  Schemer version " VERSION << std::endl
-	          << " ::::::::::::::::::::::::::" << std::endl << std::endl;
-	
+	std::cout << BANNER;
 	
 	for (;;)
 	{
 		std::cout << "> ";
-		std::getline(std::cin, line);
-		
-		if (std::cin.eof())
+		if (!std::getline(std::cin, line))
 			break;
 		
 		parser.Parse(line);
 		interp.LoadParser(parser);
 		interp.Run();
 		
-		while ((interp >> line))
-			std::cout << line << std::endl;
+		while (interp >> output)
+			std::cout << output << std::endl;
 	}
+	
 	std::cout << std::endl;
+}
+
+static void runCode ()
+{
+	Parser parser;
+	Interpreter interp;
+	
+	parser.Parse(fileInput);
+	interp.LoadParser(parser);
+	interp.Run();
+	
+	std::string output;
+	
+	while (interp >> output)
+		std::cout << output << std::endl;
+}
+
+
+
+static void option_basic (char* _input, int N)
+{
+	doing_rpl = false;
+	
+	std::string line;
+	std::fstream file(_input);
+	
+	if (file.good())
+	{
+		while (!file.eof())
+		{
+			std::getline(file, line);
+			fileInput << line << std::endl;
+		}
+		
+		file.close();
+	}
+	else
+	{
+		die("Unable to open file '" << _input << "'");
+	}
+}
+static void option_c (char* _input, int N)
+{
+	doing_rpl = false;
+	
+	fileInput << _input << std::endl;
+}
+
+
+
+int main (int argc, char** argv)
+{
+	fileInput.str("");
+	
+	argvm_begin(argc, argv);
+	
+	argvm_no_arg_help(false);
+	argvm_usage_text("[FILE1, FILE2, ...] [--code]\n Executes files in arguments, or goes into RPL mode if no arguments are given\n");
+	argvm_version_text("Schemer version " VERSION);
+	
+	argvm_option(0, "code", true, option_c, "Execute command line input");
+	argvm_basic(option_basic, NULL);
+	
+	if (argvm_end() == ARGVM_SUCCESS)
+	{
+		if (doing_rpl)
+			rpl();
+		else
+			runCode();
+	}
 	
 	return EXIT_SUCCESS;
 }
