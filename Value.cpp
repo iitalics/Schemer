@@ -105,19 +105,42 @@ SValue* SValue::Create (SValue* a, SValue* b)
 
 
 
+static std::string NumberToString (Number n, int digits)
+{
+	std::stringstream ss;
+	
+	int i = 0;
+	int base = (int)n;
+	ss << base;
+	n -= base;
+	
+	if (n > 0)
+	{
+		ss << '.';
+		while (n > 0 && (++i) < digits)
+		{
+			n *= 10;
+			base = (int)n;
+			n -= base;
+			ss << base;
+		}
+	}
+	return ss.str();
+}
+
+
+
 
 
 std::string SValue::String ()
 {
-	std::stringstream ss;
 	switch (Type)
 	{
 		case ValueTypeNull:
 			return "nil";
 		
 		case ValueTypeNumber:
-			ss << ((NumberValue*)this)->Value;
-			return ss.str();
+			return NumberToString(((NumberValue*)this)->Value, 12);
 		
 		case ValueTypeFunction:
 			return ((FunctionValue*)this)->Name();
@@ -125,6 +148,7 @@ std::string SValue::String ()
 		case ValueTypePair:
 		{
 			PairValue* p = (PairValue*)this;
+			std::stringstream ss;
 			
 			ss << "(" << p->Head->String() << " . " << p->Tail->String() << ")";
 			return ss.str();
