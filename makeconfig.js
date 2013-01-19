@@ -1,6 +1,11 @@
 {
+	"COMPILERS" : 
+	{
+		".cpp" : "g++ --std=c++0x",
+		".c"   : "gcc"
+	},
 	"LINKER" : "g++",
-	"CFLAGS" : "-Wall --std=c++0x -O3",
+	"CFLAGS" : "-Wall -O3",
 	"LFLAGS" : " --std=c++0x -O3",
 	
 	"OUTPUT" : "schemer"
