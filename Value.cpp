@@ -125,7 +125,15 @@ static std::string NumberToString (Number n, int digits)
 			ss << base;
 		}
 	}
-	return ss.str();
+	
+	std::string result(ss.str());
+	
+	int len = result.size();
+	while (result[len - 1] == '0')
+		len--;
+	
+	
+	return result.substr(0, len);
 }
 
 
@@ -140,7 +148,7 @@ std::string SValue::String ()
 			return "nil";
 		
 		case ValueTypeNumber:
-			return NumberToString(((NumberValue*)this)->Value, 12);
+			return NumberToString(((NumberValue*)this)->Value, 16);
 		
 		case ValueTypeFunction:
 			return ((FunctionValue*)this)->Name();
