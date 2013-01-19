@@ -59,13 +59,13 @@ struct PairValue : public SValue
 };
 struct FunctionValue : public SValue
 {
-	virtual SValue* Call (Interpreter*, std::vector<SValue*>) = 0;
+	virtual SValue* Call (Interpreter*, std::vector<SValue*>&) = 0;
 	virtual std::string Name () = 0;
 };
 struct NormalFunctionValue : public FunctionValue
 {
 	NormalFunctionValue (ExpressionToken* args, Token* body); // scope?
-	virtual SValue* Call (Interpreter* n, std::vector<SValue*> args);
+	virtual SValue* Call (Interpreter* n, std::vector<SValue*>& args);
 	
 	virtual SValue* Copy ();
 	virtual std::string Name ();
@@ -74,12 +74,12 @@ struct NormalFunctionValue : public FunctionValue
 	Token* Body;
 };
 
-typedef SValue* (*NativeFunctionHandler)(std::vector<SValue*>);
+typedef SValue* (*NativeFunctionHandler)(std::vector<SValue*>&);
 
 struct NativeFunctionValue : public FunctionValue
 {
 	NativeFunctionValue (NativeFunctionHandler handler);
-	virtual SValue* Call (Interpreter* n, std::vector<SValue*> args);
+	virtual SValue* Call (Interpreter* n, std::vector<SValue*>& args);
 	virtual SValue* Copy ();
 	
 	virtual std::string Name ();

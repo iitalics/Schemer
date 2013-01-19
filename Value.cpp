@@ -34,7 +34,7 @@ NormalFunctionValue::NormalFunctionValue (ExpressionToken* args, Token* body) : 
 {
 	Type = ValueTypeFunction;
 }
-SValue* NormalFunctionValue::Call (Interpreter* t, std::vector<SValue*> args)
+SValue* NormalFunctionValue::Call (Interpreter* t, std::vector<SValue*>& args)
 {
 	Scope s;
 	s.Bind(Arguments, args);
@@ -49,7 +49,7 @@ NativeFunctionValue::NativeFunctionValue (NativeFunctionHandler h) : Handler(h)
 	Type = ValueTypeFunction;
 }
 SValue* NativeFunctionValue::Copy () { return new NativeFunctionValue(Handler); }
-SValue* NativeFunctionValue::Call (Interpreter* t, std::vector<SValue*> args)
+SValue* NativeFunctionValue::Call (Interpreter* t, std::vector<SValue*>& args)
 {
 	if (Handler == NULL) return new NullValue();
 	return Handler(args);
@@ -109,6 +109,14 @@ static std::string NumberToString (Number n, int digits)
 {
 	std::stringstream ss;
 	
+	bool negative = n < 0;
+	
+	if (negative)
+	{
+		n = -n;
+		ss << '-';
+	}
+	
 	int i = 0;
 	int base = (int)n;
 	ss << base;
@@ -124,16 +132,16 @@ static std::string NumberToString (Number n, int digits)
 			n -= base;
 			ss << base;
 		}
+		
+		std::string result(ss.str());
+		
+		int len = result.size();
+		while (result[len - 1] == '0')
+			len--;
+		return result.substr(0, len);
 	}
 	
-	std::string result(ss.str());
-	
-	int len = result.size();
-	while (result[len - 1] == '0')
-		len--;
-	
-	
-	return result.substr(0, len);
+	return ss.str();
 }
 
 
@@ -158,7 +166,12 @@ std::string SValue::String ()
 			PairValue* p = (PairValue*)this;
 			std::stringstream ss;
 			
-			ss << "(" << p->Head->String() << " . " << p->Tail->String() << ")";
+			if (p->Head->Type == ValueTypeNull) return "()";
+			else if (p->Tail->Type == ValueTypeNull)
+				ss << "(" << p->Head->String() << ")";
+			else
+				ss << "(" << p->Head->String() << " . " << p->Tail->String() << ")";
+			
 			return ss.str();
 		}
 		
