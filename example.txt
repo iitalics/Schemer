@@ -1,9 +1,7 @@
-(define (sqr x)
-  (* x x))
-(define pi 3.141592)
+(define (factorial n)
+ (if (= 0 n)
+     1
+     (* n
+        (factorial n))))
 
-(define (area r)
-  (* (sqr r)
-     pi))
-
-(area 4)
+(factorial 3)
