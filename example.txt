@@ -1,8 +1,23 @@
-(define (length A)
+(define (sort-iter b A c)
   (if (null? A)
-      0
-      (+ (length (tail A))
-         1)))
+      (list b)
+      (if (<= b (car A))
+          (if c
+              (cons b A)
+              (sort-iter b
+                         (sort-iter (car A)
+                                    (cdr A)
+                                    #f)
+                         #t))
+          (sort-iter (car A)
+                     (cons b
+                           (cdr A))
+                     #f))))
+(define (sort A)
+   (sort-iter (car A)
+              (cdr A)
+              #f))
 
 
-(length (list 8 7 3 4))
+
+(sort (list 5 3 8 1 9))

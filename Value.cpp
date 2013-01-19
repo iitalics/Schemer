@@ -203,11 +203,26 @@ std::string SValue::String ()
 			PairValue* p = (PairValue*)this;
 			std::stringstream ss;
 			
-			if (p->Head->Type == ValueTypeNull) return "()";
-			else if (p->Tail->Type == ValueTypeNull)
-				ss << "(" << p->Head->String() << ")";
+			
+			ss << "(" << p->Head->String();
+			
+			if (p->Tail->Type == ValueTypePair)
+			{
+				while (p->Tail->Type == ValueTypePair)
+				{
+					p = (PairValue*)p->Tail;
+					ss << ", " << p->Head->String();
+				}
+				if (p->Tail->Type != ValueTypeNull)
+					ss << p->Tail->String();
+			}
 			else
-				ss << "(" << p->Head->String() << " . " << p->Tail->String() << ")";
+			{
+				if (p->Tail->Type != ValueTypeNull)
+					ss << " . " << p->Tail->String();
+			}
+			ss << ")";
+			
 			
 			return ss.str();
 		}
