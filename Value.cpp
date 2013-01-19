@@ -36,6 +36,7 @@ NormalFunctionValue::NormalFunctionValue (ExpressionToken* args, Token* body)
 	fType = FunctionTypeNormal;
 	Type = ValueTypeFunction;
 }
+NormalFunctionValue::NormalFunctionValue () { Type = ValueTypeFunction; }
 SValue* NormalFunctionValue::Call (Interpreter* t, std::vector<SValue*>& args)
 {
 	Scope s;
@@ -59,17 +60,49 @@ SValue* NativeFunctionValue::Call (Interpreter* t, std::vector<SValue*>& args)
 	return Handler(args);
 }
 
+
+
+
+LambdaFunctionValue::LambdaFunctionValue (ExpressionToken* args, Token* body, Scope* s)
+{
+	Arguments = args;
+	Body = body;
+	
+	Type = ValueTypeFunction;
+	fType = FunctionTypeLambda;
+	
+	scope = new Scope();
+	
+	if (s != NULL)
+	{
+		scope->Bind(*s);
+	}
+}
+LambdaFunctionValue::~LambdaFunctionValue ()
+{
+	delete scope;
+}
+SValue* LambdaFunctionValue::Call (Interpreter* n, std::vector<SValue*>& values)
+{
+	Scope newScope(*scope);
+	newScope.Bind(Arguments, values, true);
+	
+	return n->Evaluate(Body, &newScope);
+}
+SValue* LambdaFunctionValue::Copy ()
+{
+	return new LambdaFunctionValue(Arguments, Body, scope);
+}
+
+
 std::string NormalFunctionValue::Name ()
 {
 	std::stringstream ss; 
 	ss << "[Function " << ((VariableToken*)Arguments->Function)->Name << "]";
 	return ss.str();
 }
-std::string NativeFunctionValue::Name ()
-{
-	return "[Native function]";
-}
-
+std::string NativeFunctionValue::Name () { return "[Native function]"; }
+std::string LambdaFunctionValue::Name () { return "[Lambda function]"; }
 
 
 

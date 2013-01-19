@@ -131,6 +131,21 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 				else
 					return Evaluate(e->Arguments[2], scope, true);
 			}
+			else if (firstName == "lambda")
+			{
+				if (e->Arguments.size() != 2)
+					die("Invalid lambda syntax");
+				
+				Token* args_token = e->Arguments[0];
+				Token* body = e->Arguments[1];
+				
+				if (args_token->Type != TokenTypeExpression)
+					die("Invalid lambda arguments");
+				
+				LambdaFunctionValue* lambda = new LambdaFunctionValue(
+					(ExpressionToken*)args_token, body, scope);
+				return lambda;
+			}
 			else
 			{
 				FunctionValue* f = (FunctionValue*)Evaluate(e->Function, scope);
@@ -208,7 +223,7 @@ void Interpreter::GarbageCollect ()
 		if ((*s)->Type == ValueTypeFunction)
 		{
 			NormalFunctionValue* f = (NormalFunctionValue*)*s;
-			if (f->fType == FunctionTypeNormal)
+			if (f->fType & FunctionTypeNormal)
 			{
 				findAllTokens(f->Arguments, &allTokens);
 				findAllTokens(f->Body, &allTokens);
@@ -253,7 +268,7 @@ void Interpreter::GarbageCollect ()
 
 
 Scope::Scope () {}
-Scope::Scope (ExpressionToken* argl, std::vector<SValue*>& args) { Bind(argl, args); }
+Scope::Scope (ExpressionToken* argl, std::vector<SValue*>& args, bool icn) { Bind(argl, args, icn); }
 Scope::Scope (const Scope& s) { Bind(s); }
 Scope::~Scope ()
 {
@@ -268,9 +283,9 @@ void Scope::Bind (const Scope& s)
 	for (auto i = s.data.begin(); i != s.data.end(); ++i)
 		data[i->first] = i->second->Copy();
 }
-void Scope::Bind (ExpressionToken* e, std::vector<SValue*>& args)
+void Scope::Bind (ExpressionToken* e, std::vector<SValue*>& args, bool includeName)
 {
-	std::vector<std::string> names = e->Names(false);
+	std::vector<std::string> names = e->Names(includeName);
 	unsigned int len = names.size();
 	if (len > args.size())
 		len = args.size();

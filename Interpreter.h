@@ -36,12 +36,12 @@ class Scope
 {
 public:
 	Scope ();
-	Scope (ExpressionToken* argl, std::vector<SValue*>& args);
+	Scope (ExpressionToken* argl, std::vector<SValue*>& args, bool includeName = false);
 	Scope (const Scope& s);
 	~Scope ();
 	
 	
-	void Bind (ExpressionToken* argl, std::vector<SValue*>& args);
+	void Bind (ExpressionToken* argl, std::vector<SValue*>& args, bool includeName = false);
 	void Bind (const Scope& s);
 	
 	

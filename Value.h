@@ -4,7 +4,8 @@
 typedef double Number;
 
 
-class Token;class ExpressionToken;class Interpreter;
+class Token;class ExpressionToken;class Interpreter;class Scope;
+
 
 enum ValueType
 {
@@ -18,12 +19,13 @@ enum FunctionType
 {
 	FunctionTypeNative = 1,
 	FunctionTypeNormal = 2,
-	FunctionTypeLambda = 3
+	FunctionTypeLambda = 2 + 4 
 };
 
 
-struct SValue
+class SValue
 {
+public:
 	ValueType Type;
 	virtual ~SValue ();
 	
@@ -37,25 +39,28 @@ struct SValue
 	static SValue* Create (SValue*, SValue*);
 };
 
-struct NullValue : public SValue { virtual SValue* Copy(); };
+class NullValue : public SValue { public: virtual SValue* Copy(); };
 
-struct BooleanValue : public SValue
+class BooleanValue : public SValue
 {
+public:
 	BooleanValue (bool b);
 	virtual SValue* Copy ();
 	bool Value;
 };
 
 
-struct NumberValue : public SValue
+class NumberValue : public SValue
 {
+public:
 	NumberValue (Number n);
 	Number Value;
 	
 	virtual SValue* Copy ();
 };
-struct PairValue : public SValue
+class PairValue : public SValue
 {
+public:
 	PairValue (SValue* head, SValue* tail);
 	virtual ~PairValue ();
 	SValue* Head;
@@ -63,16 +68,18 @@ struct PairValue : public SValue
 	
 	virtual SValue* Copy ();
 };
-struct FunctionValue : public SValue
+class FunctionValue : public SValue
 {
+public:
 	FunctionType fType;
 	
 	virtual SValue* Call (Interpreter*, std::vector<SValue*>&) = 0;
 	virtual std::string Name () = 0;
 };
-struct NormalFunctionValue : public FunctionValue
+class NormalFunctionValue : public FunctionValue
 {
-	NormalFunctionValue (ExpressionToken* args, Token* body); // scope?
+public:
+	NormalFunctionValue (ExpressionToken* args, Token* body);
 	virtual SValue* Call (Interpreter* n, std::vector<SValue*>& args);
 	
 	virtual SValue* Copy ();
@@ -80,12 +87,31 @@ struct NormalFunctionValue : public FunctionValue
 	
 	ExpressionToken* Arguments;
 	Token* Body;
+	
+protected:
+	NormalFunctionValue ();
 };
+
+class LambdaFunctionValue : public NormalFunctionValue
+{
+public:
+	LambdaFunctionValue (ExpressionToken* args, Token* body, Scope* scope);
+	virtual ~LambdaFunctionValue ();
+	virtual SValue* Call (Interpreter* n, std::vector<SValue*>& args);
+	
+	virtual SValue* Copy ();
+	virtual std::string Name ();
+	
+	Scope* scope;
+	
+};
+
 
 typedef SValue* (*NativeFunctionHandler)(std::vector<SValue*>&);
 
-struct NativeFunctionValue : public FunctionValue
+class NativeFunctionValue : public FunctionValue
 {
+public:
 	NativeFunctionValue (NativeFunctionHandler handler);
 	virtual SValue* Call (Interpreter* n, std::vector<SValue*>& args);
 	virtual SValue* Copy ();
