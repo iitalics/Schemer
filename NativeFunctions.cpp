@@ -19,7 +19,7 @@ static SValue* proc_sub (std::vector<SValue*> values)
 	for (auto i = values.begin(); i != values.end(); ++i)
 	{
 		if ((*i)->Type != ValueTypeNumber)
-			die((*i)->String() << " is not a number, cannot add")//;
+			die((*i)->String() << " is not a number, cannot subtract")//;
 		
 		if (first)
 			r = ((NumberValue*)*i)->Value;
@@ -34,7 +34,7 @@ static SValue* proc_mult (std::vector<SValue*> values)
 	for (auto i = values.begin(); i != values.end(); ++i)
 	{
 		if ((*i)->Type != ValueTypeNumber)
-			die((*i)->String() << " is not a number, cannot add")//;
+			die((*i)->String() << " is not a number, cannot multiply")//;
 		r *= ((NumberValue*)*i)->Value;
 	}
 	return new NumberValue(r);
@@ -46,7 +46,7 @@ static SValue* proc_div (std::vector<SValue*> values)
 	for (auto i = values.begin(); i != values.end(); ++i)
 	{
 		if ((*i)->Type != ValueTypeNumber)
-			die((*i)->String() << " is not a number, cannot add")//;
+			die((*i)->String() << " is not a number, cannot divide")//;
 		
 		if (first)
 			r = ((NumberValue*)*i)->Value;
@@ -78,7 +78,8 @@ static SValue* proc_eql (std::vector<SValue*> values)
 	}
 	if (values[0]->Type != values[1]->Type)
 	{
-		die("Invalid conflicting types");
+		return new BooleanValue(false);
+		//die("Invalid conflicting types");
 	}
 	
 	bool v = false;
@@ -103,7 +104,7 @@ static SValue* proc_less (std::vector<SValue*> values)
 {
 	if (values.size() != 2)
 	{
-		die("Invalid number of arguments to =");
+		die("Invalid number of arguments to <");
 	}
 	if (values[0]->Type != ValueTypeNumber)
 	{
@@ -118,7 +119,7 @@ static SValue* proc_grt (std::vector<SValue*> values)
 {
 	if (values.size() != 2)
 	{
-		die("Invalid number of arguments to =");
+		die("Invalid number of arguments to >");
 	}
 	if (values[0]->Type != ValueTypeNumber)
 	{
@@ -133,7 +134,7 @@ static SValue* proc_lsse (std::vector<SValue*> values)
 {
 	if (values.size() != 2)
 	{
-		die("Invalid number of arguments to =");
+		die("Invalid number of arguments to <=");
 	}
 	if (values[0]->Type != ValueTypeNumber)
 	{
@@ -148,7 +149,7 @@ static SValue* proc_grte (std::vector<SValue*> values)
 {
 	if (values.size() != 2)
 	{
-		die("Invalid number of arguments to =");
+		die("Invalid number of arguments to >=");
 	}
 	if (values[0]->Type != ValueTypeNumber)
 	{
