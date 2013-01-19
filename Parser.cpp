@@ -1,7 +1,7 @@
 #include "includes.h"
 #include "Parser.h"
 #include "Token.h"
-
+#include <time.h>
 
 //  TokenFactory <
 TokenFactory::TokenFactory ()
