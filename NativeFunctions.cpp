@@ -1,30 +1,31 @@
 #include "includes.h"
 #include "Interpreter.h"
 
+#include "unistd.h"
+
 static SValue* proc_add (std::vector<SValue*> values)
 {
 	Number r = 0;
 	for (auto i = values.begin(); i != values.end(); ++i)
 	{
 		if ((*i)->Type != ValueTypeNumber)
-			die((*i)->String() << " is not a number, cannot add")//;
+			die((*i)->String() << " is not a number")//;
 		r += ((NumberValue*)*i)->Value;
 	}
 	return new NumberValue(r);
 }
 static SValue* proc_sub (std::vector<SValue*> values)
 {
-	bool first = true;
-	Number r = 0;
-	for (auto i = values.begin(); i != values.end(); ++i)
+	if (values.size() == 0) return 0;
+	auto i = values.begin();
+	
+	if ((*i)->Type != ValueTypeNumber) die((*i)->String() << " is not a number");
+	Number r = ((NumberValue*)*i)->Value;
+	
+	for (i++; i != values.end(); i++)
 	{
-		if ((*i)->Type != ValueTypeNumber)
-			die((*i)->String() << " is not a number, cannot subtract")//;
-		
-		if (first)
-			r = ((NumberValue*)*i)->Value;
-		else
-			r -= ((NumberValue*)*i)->Value;
+		if ((*i)->Type != ValueTypeNumber) die((*i)->String() << " is not a number");
+		r -= ((NumberValue*)*i)->Value;
 	}
 	return new NumberValue(r);
 }
@@ -34,24 +35,23 @@ static SValue* proc_mult (std::vector<SValue*> values)
 	for (auto i = values.begin(); i != values.end(); ++i)
 	{
 		if ((*i)->Type != ValueTypeNumber)
-			die((*i)->String() << " is not a number, cannot multiply")//;
+			die((*i)->String() << " is not a number")//;
 		r *= ((NumberValue*)*i)->Value;
 	}
 	return new NumberValue(r);
 }
 static SValue* proc_div (std::vector<SValue*> values)
 {
-	bool first = true;
-	Number r = 0;
-	for (auto i = values.begin(); i != values.end(); ++i)
+	if (values.size() == 0) return 0;
+	auto i = values.begin();
+	
+	if ((*i)->Type != ValueTypeNumber) die((*i)->String() << " is not a number");
+	Number r = ((NumberValue*)*i)->Value;
+	
+	for (i++; i != values.end(); i++)
 	{
-		if ((*i)->Type != ValueTypeNumber)
-			die((*i)->String() << " is not a number, cannot divide")//;
-		
-		if (first)
-			r = ((NumberValue*)*i)->Value;
-		else
-			r /= ((NumberValue*)*i)->Value;
+		if ((*i)->Type != ValueTypeNumber) die((*i)->String() << " is not a number");
+		r /= ((NumberValue*)*i)->Value;
 	}
 	return new NumberValue(r);
 }
