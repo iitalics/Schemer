@@ -1,7 +1,8 @@
 #include "includes.h"
 #include "Interpreter.h"
 
-#include "unistd.h"
+#define _USE_MATH_DEFINES
+#include <cmath>
 
 static SValue* proc_add (std::vector<SValue*> values)
 {
@@ -161,6 +162,52 @@ static SValue* proc_grte (std::vector<SValue*> values)
 		((NumberValue*)values[1])->Value);
 }
 
+static SValue* proc_pow (std::vector<SValue*> values)
+{
+	if (values.size() != 2)
+	{
+		die("Invalid number of arguments to ^");
+	}
+	if (values[0]->Type != ValueTypeNumber)
+	{
+		die("Invalid exponents on non-numbers");
+	}
+	Number a = ((NumberValue*)values[0])->Value;
+	Number b = ((NumberValue*)values[1])->Value;
+	
+	if (a == 1 || b == 0)
+		return new NumberValue(1);
+	if (b == 0.5)
+		return new NumberValue(sqrt(a));
+	if (b == 2)
+		return new NumberValue(a * a);
+	return new NumberValue(pow(a, b));
+}
+static SValue* proc_sqrt (std::vector<SValue*> values)
+{
+	if (values.size() != 1 || values[0]->Type != ValueTypeNumber)
+	{
+		die("Invalid arguments");
+	}
+	return new NumberValue(sqrt(((NumberValue*)values[0])->Value));
+}
+static SValue* proc_sin (std::vector<SValue*> values)
+{
+	if (values.size() != 1 || values[0]->Type != ValueTypeNumber)
+	{
+		die("Invalid arguments");
+	}
+	return new NumberValue(sin(((NumberValue*)values[0])->Value));
+}
+static SValue* proc_cos (std::vector<SValue*> values)
+{
+	if (values.size() != 1 || values[0]->Type != ValueTypeNumber)
+	{
+		die("Invalid arguments");
+	}
+	return new NumberValue(cos(((NumberValue*)values[0])->Value));
+}
+
 
 
 void RegisterNativeFunctions (Scope* s)
@@ -169,6 +216,13 @@ void RegisterNativeFunctions (Scope* s)
 	s->Set("-", new NativeFunctionValue(proc_sub));
 	s->Set("*", new NativeFunctionValue(proc_mult));
 	s->Set("/", new NativeFunctionValue(proc_div));
+	s->Set("^", new NativeFunctionValue(proc_pow));
+	
+	s->Set("sqrt", new NativeFunctionValue(proc_sqrt));
+	s->Set("sin", new NativeFunctionValue(proc_sin));
+	s->Set("cos", new NativeFunctionValue(proc_cos));
+	
+	s->Set("PI", new NumberValue(3.14159265358979));
 	
 	//s->Set("cond", new NativeFunctionValue(proc_cond));
 	s->Set("null?", new NativeFunctionValue(proc_isnull));
