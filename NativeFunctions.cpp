@@ -4,7 +4,7 @@
 #define _USE_MATH_DEFINES
 #include <cmath>
 
-static SValue* proc_add (std::vector<SValue*> values)
+static SValue* proc_add (std::vector<SValue*>& values)
 {
 	Number r = 0;
 	for (auto i = values.begin(); i != values.end(); ++i)
@@ -15,7 +15,7 @@ static SValue* proc_add (std::vector<SValue*> values)
 	}
 	return new NumberValue(r);
 }
-static SValue* proc_sub (std::vector<SValue*> values)
+static SValue* proc_sub (std::vector<SValue*>& values)
 {
 	if (values.size() == 0) return 0;
 	auto i = values.begin();
@@ -30,7 +30,7 @@ static SValue* proc_sub (std::vector<SValue*> values)
 	}
 	return new NumberValue(r);
 }
-static SValue* proc_mult (std::vector<SValue*> values)
+static SValue* proc_mult (std::vector<SValue*>& values)
 {
 	Number r = 1;
 	for (auto i = values.begin(); i != values.end(); ++i)
@@ -41,7 +41,7 @@ static SValue* proc_mult (std::vector<SValue*> values)
 	}
 	return new NumberValue(r);
 }
-static SValue* proc_div (std::vector<SValue*> values)
+static SValue* proc_div (std::vector<SValue*>& values)
 {
 	if (values.size() == 0) return 0;
 	auto i = values.begin();
@@ -56,22 +56,21 @@ static SValue* proc_div (std::vector<SValue*> values)
 	}
 	return new NumberValue(r);
 }
-/*
-static SValue* proc_cond (std::vector<SValue*> values)
+static SValue* proc_cons (std::vector<SValue*>& values)
 {
 	if (values.size() != 2)
-		die("Incorrect arguments to (cond)");
+		die("Incorrect arguments to cons");
 	
-	return new PairValue(values[0], values[1]);
-}*/
-static SValue* proc_isnull (std::vector<SValue*> values)
+	return new PairValue(values[0]->Copy(), values[1]->Copy());
+}
+static SValue* proc_isnull (std::vector<SValue*>& values)
 {
 	for (auto i = values.begin(); i != values.end(); ++i)
 		if ((*i)->Type != ValueTypeNull)
 			return new BooleanValue(false);
 	return new BooleanValue(true);
 }
-static SValue* proc_eql (std::vector<SValue*> values)
+static SValue* proc_eql (std::vector<SValue*>& values)
 {
 	if (values.size() != 2)
 	{
@@ -101,7 +100,7 @@ static SValue* proc_eql (std::vector<SValue*> values)
 	}
 	return new BooleanValue(v);
 }
-static SValue* proc_less (std::vector<SValue*> values)
+static SValue* proc_less (std::vector<SValue*>& values)
 {
 	if (values.size() != 2)
 	{
@@ -116,7 +115,7 @@ static SValue* proc_less (std::vector<SValue*> values)
 			<
 		((NumberValue*)values[1])->Value);
 }
-static SValue* proc_grt (std::vector<SValue*> values)
+static SValue* proc_grt (std::vector<SValue*>& values)
 {
 	if (values.size() != 2)
 	{
@@ -131,7 +130,7 @@ static SValue* proc_grt (std::vector<SValue*> values)
 			>
 		((NumberValue*)values[1])->Value);
 }
-static SValue* proc_lsse (std::vector<SValue*> values)
+static SValue* proc_lsse (std::vector<SValue*>& values)
 {
 	if (values.size() != 2)
 	{
@@ -146,7 +145,7 @@ static SValue* proc_lsse (std::vector<SValue*> values)
 			<=
 		((NumberValue*)values[1])->Value);
 }
-static SValue* proc_grte (std::vector<SValue*> values)
+static SValue* proc_grte (std::vector<SValue*>& values)
 {
 	if (values.size() != 2)
 	{
@@ -162,13 +161,13 @@ static SValue* proc_grte (std::vector<SValue*> values)
 		((NumberValue*)values[1])->Value);
 }
 
-static SValue* proc_pow (std::vector<SValue*> values)
+static SValue* proc_pow (std::vector<SValue*>& values)
 {
 	if (values.size() != 2)
 	{
 		die("Invalid number of arguments to ^");
 	}
-	if (values[0]->Type != ValueTypeNumber)
+	if (values[0]->Type != ValueTypeNumber || values[1]->Type != ValueTypeNumber)
 	{
 		die("Invalid exponents on non-numbers");
 	}
@@ -183,7 +182,18 @@ static SValue* proc_pow (std::vector<SValue*> values)
 		return new NumberValue(a * a);
 	return new NumberValue(pow(a, b));
 }
-static SValue* proc_sqrt (std::vector<SValue*> values)
+static SValue* proc_rem (std::vector<SValue*>& values)
+{
+	if (values.size() != 2 || values[0]->Type != ValueTypeNumber || values[1]->Type != ValueTypeNumber)
+	{
+		die("Invalid arguments to %");
+	}
+	Number a = ((NumberValue*)values[0])->Value;
+	Number b = ((NumberValue*)values[1])->Value;
+	
+	return new NumberValue(fmod(a, b));
+}
+static SValue* proc_sqrt (std::vector<SValue*>& values)
 {
 	if (values.size() != 1 || values[0]->Type != ValueTypeNumber)
 	{
@@ -191,7 +201,7 @@ static SValue* proc_sqrt (std::vector<SValue*> values)
 	}
 	return new NumberValue(sqrt(((NumberValue*)values[0])->Value));
 }
-static SValue* proc_sin (std::vector<SValue*> values)
+static SValue* proc_sin (std::vector<SValue*>& values)
 {
 	if (values.size() != 1 || values[0]->Type != ValueTypeNumber)
 	{
@@ -199,13 +209,52 @@ static SValue* proc_sin (std::vector<SValue*> values)
 	}
 	return new NumberValue(sin(((NumberValue*)values[0])->Value));
 }
-static SValue* proc_cos (std::vector<SValue*> values)
+static SValue* proc_cos (std::vector<SValue*>& values)
 {
 	if (values.size() != 1 || values[0]->Type != ValueTypeNumber)
 	{
 		die("Invalid arguments");
 	}
 	return new NumberValue(cos(((NumberValue*)values[0])->Value));
+}
+static SValue* proc_list (std::vector<SValue*>& values)
+{
+	if (values.size() == 0)
+		return new NullValue();
+	
+	
+	NullValue* nil = new NullValue();
+	
+	auto i = values.begin();
+	
+	PairValue* base = new PairValue((*i)->Copy(), nil);
+	PairValue* pair = base;
+	PairValue* cur;
+	
+	for (i++; i != values.end(); i++)
+	{
+		cur = new PairValue((*i)->Copy(), nil);
+		pair->Tail = cur;
+		pair = cur;
+		//std::cout << "adding to list " << values[i]->String() << std::endl;
+	}
+	return base;
+}
+static SValue* proc_head (std::vector<SValue*>& values)
+{
+	if (values.size() != 1 || values[0]->Type != ValueTypePair)
+	{
+		die("Invalid arguments");
+	}
+	return ((PairValue*)values[0])->Head->Copy();
+}
+static SValue* proc_tail (std::vector<SValue*>& values)
+{
+	if (values.size() != 1 || values[0]->Type != ValueTypePair)
+	{
+		die("Invalid arguments");
+	}
+	return ((PairValue*)values[0])->Tail->Copy();
 }
 
 
@@ -217,6 +266,7 @@ void RegisterNativeFunctions (Scope* s)
 	s->Set("*", new NativeFunctionValue(proc_mult));
 	s->Set("/", new NativeFunctionValue(proc_div));
 	s->Set("^", new NativeFunctionValue(proc_pow));
+	s->Set("%", new NativeFunctionValue(proc_rem));
 	
 	s->Set("sqrt", new NativeFunctionValue(proc_sqrt));
 	s->Set("sin", new NativeFunctionValue(proc_sin));
@@ -224,7 +274,10 @@ void RegisterNativeFunctions (Scope* s)
 	
 	s->Set("PI", new NumberValue(3.14159265358979));
 	
-	//s->Set("cond", new NativeFunctionValue(proc_cond));
+	s->Set("cons", new NativeFunctionValue(proc_cons));
+	s->Set("list", new NativeFunctionValue(proc_list));
+	s->Set("head", new NativeFunctionValue(proc_head));s->Set("car", new NativeFunctionValue(proc_head));
+	s->Set("tail", new NativeFunctionValue(proc_tail));s->Set("cdr", new NativeFunctionValue(proc_tail));
 	s->Set("null?", new NativeFunctionValue(proc_isnull));
 	
 	

@@ -1,7 +1,8 @@
-(define (factorial n)
- (if (= 0 n)
-     1
-     (* n
-        (factorial (- n 1)))))
+(define (length A)
+  (if (null? A)
+      0
+      (+ (length (tail A))
+         1)))
 
-(factorial 3)
+
+(length (list 8 7 3 4))
