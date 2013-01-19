@@ -6,3 +6,11 @@ Basic Scheme interpreter written in C++, probably doesn't follow all the standar
 - Number of lines:
 cat *.cpp *.h|grep -vP '^\s*$'|wc -l
 
+
+
+# TODO
+- Change argvments to some other argument parser
+- Fix up how the native functions work, the argument checking is a mess
+- Actually, add more argument checking in general
+- Add some print functions
+- Strings (maybe)
