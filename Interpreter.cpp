@@ -103,6 +103,8 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 					
 					result = function;
 				}
+				else die("Invalid define syntax");
+				
 				if (requireOutput)
 					return result;
 			}

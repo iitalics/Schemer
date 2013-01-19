@@ -79,7 +79,6 @@ static SValue* proc_eql (std::vector<SValue*>& values)
 	if (values[0]->Type != values[1]->Type)
 	{
 		return new BooleanValue(false);
-		//die("Invalid conflicting types");
 	}
 	
 	bool v = false;
