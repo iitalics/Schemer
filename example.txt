@@ -1,23 +1,46 @@
-(define (sort-iter b A c)
+; ==========
+; 
+;   Usage: Enter each list item on seperate line, then enter
+;            blank line to finish the list
+;   A sorted version of the list will be displayed
+;
+; ==========
+
+
+(define (push A n)
   (if (null? A)
-      (list b)
-      (if (<= b (car A))
-          (if c
-              (cons b A)
-              (sort-iter b
-                         (sort-iter (car A)
-                                    (cdr A)
-                                    #f)
-                         #t))
-          (sort-iter (car A)
-                     (cons b
-                           (cdr A))
-                     #f))))
+      (cons n nil)
+	  (cons (car A)
+	        (push (cdr A)
+			      n))))
+;
+
+(define (list-input-iter A I)
+  (if (null? I)
+      A
+	  (list-input-iter (push A I)
+	                   (input))))
+(define (list-input)
+  (list-input-iter nil (input)))
+;
+
+(define (sort-recur h T c)
+  (if (null? T)
+      (list h)
+	  (if (<= h (car T))
+	      (if c
+		      (cons h T)
+			  (sort-recur h
+			              (sort-recur (car T)
+						              (cdr T)
+									  #f)
+				          #t))
+		  (sort-recur (car T)
+		              (cons h (cdr T))
+					  #f))))
 (define (sort A)
-   (sort-iter (car A)
-              (cdr A)
-              #f))
+  (sort-recur (car A) (cdr A) #f))
+;
 
 
-
-(sort (list 5 3 8 1 9))
+(sort (list-input))

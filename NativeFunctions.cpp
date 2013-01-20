@@ -255,6 +255,26 @@ static SValue* proc_tail (std::vector<SValue*>& values)
 	}
 	return ((PairValue*)values[0])->Tail->Copy();
 }
+static SValue* proc_display (std::vector<SValue*>& values)
+{
+	for (auto i = values.begin(); i != values.end(); i++)
+		std::cout << (*i)->String() << std::endl;
+	return new NumberValue(0);
+}
+static SValue* proc_input (std::vector<SValue*>& values)
+{
+	std::string line;
+	getline(std::cin, line);
+	
+	if (line.size() == 0 || line == "nil")
+		return new NullValue();
+	if (line == "#t")
+		return new BooleanValue(true);
+	if (line == "#f")
+		return new BooleanValue(false);
+	
+	return new NumberValue(atof(line.c_str()));
+}
 
 
 
@@ -285,4 +305,8 @@ void RegisterNativeFunctions (Scope* s)
 	s->Set("<=", new NativeFunctionValue(proc_lsse));
 	s->Set(">", new NativeFunctionValue(proc_grt));
 	s->Set(">=", new NativeFunctionValue(proc_grte));
+	
+	
+	s->Set("display", new NativeFunctionValue(proc_display));
+	s->Set("input", new NativeFunctionValue(proc_input));
 }
