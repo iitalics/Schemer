@@ -10,7 +10,7 @@ static SValue* proc_add (std::vector<SValue*>& values)
 	for (auto i = values.begin(); i != values.end(); ++i)
 	{
 		if ((*i)->Type != ValueTypeNumber)
-			die((*i)->String() << " is not a number")//;
+			die((*i)->String() << " is not a number");
 		r += ((NumberValue*)*i)->Value;
 	}
 	return new NumberValue(r);
@@ -36,7 +36,7 @@ static SValue* proc_mult (std::vector<SValue*>& values)
 	for (auto i = values.begin(); i != values.end(); ++i)
 	{
 		if ((*i)->Type != ValueTypeNumber)
-			die((*i)->String() << " is not a number")//;
+			die((*i)->String() << " is not a number");
 		r *= ((NumberValue*)*i)->Value;
 	}
 	return new NumberValue(r);

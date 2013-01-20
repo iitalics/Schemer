@@ -118,7 +118,7 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 			else if (firstName == "if")
 			{
 				if (e->Arguments.size() != 3)
-					die("Invalid 'if' syntax, expected 3 arguments")
+					die("Invalid 'if' syntax, expected 3 arguments");
 				
 				SValue* condition = Evaluate(e->Arguments[0], scope, true);
 				if (condition->Type != ValueTypeBoolean)

@@ -1,3 +1,5 @@
+#pragma once
+
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -10,7 +12,7 @@
 
 
 
-#ifdef WIN32
+#ifdef _WIN32
 
 #define COLOR_Red ""
 #define COLOR_Off ""
@@ -22,4 +24,10 @@
 
 #endif
 
-#define die(x) {std::cerr << COLOR_Red << x << COLOR_Off << std::endl;exit(-1);}
+#define die(x) do 							\
+{				  							\
+	std::cerr << COLOR_Red << "Error: " << x\
+	          << COLOR_Off << std::endl;	\
+	exit(-1);	  							\
+} while (0)
+
