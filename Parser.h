@@ -50,6 +50,7 @@ public:
 	std::vector<Token*> FlushTokens ();
 private:
 	
+	void deleteComments ();
 	void parse ();
 	Token* parseToken ();
 	

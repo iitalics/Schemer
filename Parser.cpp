@@ -62,6 +62,7 @@ ExpressionToken* TokenFactory::CreateExpressionToken (std::vector<Token*> tokens
 
 #define BEGIN_EXP '('
 #define END_EXP ')'
+#define COMMENT_SEPERATOR ';'
 
 
 
@@ -172,7 +173,27 @@ std::string Parser::block ()
 		out << next();
 	return out.str();
 }
-
+void Parser::deleteComments ()
+{
+	std::stringstream ss(buffer);
+	std::stringstream output;
+	std::string line;
+	
+	while (!ss.eof())
+	{
+		std::getline(ss, line);
+		
+		auto index = line.find(COMMENT_SEPERATOR);
+		if (index != std::string::npos)
+			output << line.substr(0, index);
+		else
+			output << line;
+		
+		output << std::endl;
+	}
+	
+	buffer = output.str();
+}
 
 Token* Parser::parseToken ()
 {
@@ -227,6 +248,7 @@ Token* Parser::parseToken ()
 
 void Parser::parse ()
 {
+	deleteComments();
 	trim();
 	while (!eof())
 	{
