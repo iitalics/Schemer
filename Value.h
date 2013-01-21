@@ -1,7 +1,7 @@
 #pragma once
 
 
-typedef double Number;
+typedef long double Number;
 
 
 class Token;class ExpressionToken;class Interpreter;class Scope;

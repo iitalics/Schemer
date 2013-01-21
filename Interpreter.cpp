@@ -146,6 +146,43 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 					(ExpressionToken*)args_token, body, scope);
 				return lambda;
 			}
+			else if (firstName == "let")
+			{
+				if (e->Arguments.size() != 2 ||
+				    e->Arguments[0]->Type != TokenTypeExpression)
+					die("Invalid let syntax");
+				ExpressionToken* vars_e = (ExpressionToken*)(e->Arguments[0]);
+				Token* body = e->Arguments[1];
+				
+				Scope* newScope;
+				if (scope == NULL)
+					newScope = new Scope();
+				else
+					newScope = new Scope(*scope);
+				
+				std::vector<Token*> vars;
+				vars.push_back(vars_e->Function);
+				for (auto i = vars_e->Arguments.cbegin(); i != vars_e->Arguments.cend(); i++)
+					vars.push_back(*i);
+				for (auto i = vars.cbegin(); i != vars.cend(); i++)
+				{
+					ExpressionToken* v = (ExpressionToken*)*i;
+					
+					if (v->Type != TokenTypeExpression ||
+					    v->Function->Type != TokenTypeVariable ||
+					    v->Arguments.size() != 1)
+					{
+						die("Invalid let variable");
+					}
+					
+					newScope->Set(((VariableToken*)v->Function)->Name,
+						Evaluate(v->Arguments[0], newScope, true));
+				}
+				
+				SValue* result = Evaluate(body, newScope);
+				delete newScope;
+				return result;
+			}
 			else
 			{
 				FunctionValue* f = (FunctionValue*)Evaluate(e->Function, scope);
