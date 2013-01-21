@@ -198,8 +198,23 @@ void Parser::deleteComments ()
 	{
 		std::getline(ss, line);
 		
-		auto index = line.find(COMMENT_SEPERATOR);
-		if (index != std::string::npos)
+		unsigned int index = 0;
+		
+		bool inquotes = false;
+		for (; index < line.size(); index++)
+		{
+			if (line[index] == '"')
+				inquotes = !inquotes;
+			else if (inquotes)
+			{
+				if (line[index] == '\\')
+					index++;
+			}
+			else if (line[index] == COMMENT_SEPERATOR)
+				break;
+		}
+		
+		if (index < line.size())
 			output << line.substr(0, index);
 		else
 			output << line;
