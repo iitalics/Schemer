@@ -87,8 +87,6 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 			
 			if (firstName == "define")
 			{
-				SValue* result = NULL;
-				
 				if (e->Arguments.size() != 2)
 					die("Invalid define syntax");
 				
@@ -98,7 +96,7 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 				if (args_token->Type == TokenTypeVariable)
 				{
 					std::string name(((VariableToken*)args_token)->Name);
-					globalScope->Set(name, result = Evaluate(body, scope));
+					globalScope->Set(name, Evaluate(body, scope), false);
 				}
 				else if (args_token->Type == TokenTypeExpression)
 				{
@@ -112,18 +110,12 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 					
 					std::string name(((VariableToken*)args->Function)->Name);
 					
-					FunctionValue* function = new NormalFunctionValue(args, body);
-					globalScope->Set(name, function);
-					
-					if (!requireOutput)
-						delete function;
-					else
-						result = function;
+					globalScope->Set(name, new NormalFunctionValue(args, body), false);
 				}
 				else die("Invalid define syntax");
 				
 				if (requireOutput)
-					return result;
+					return new NullValue();
 			}
 			else if (firstName == "if")
 			{
@@ -132,9 +124,7 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 				
 				SValue* condition = Evaluate(e->Arguments[0], scope, true);
 				if (condition->Type != ValueTypeBoolean)
-				{
-					die("Invalid 'if' statement, condition is not boolean type");
-				}
+					die("Invalid 'if' statement, condition '" << condition->String() << "' is not boolean type");
 				
 				SValue* result;
 				
@@ -191,7 +181,7 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 					}
 					
 					newScope->Set(((VariableToken*)v->Function)->Name,
-						Evaluate(v->Arguments[0], newScope, true));
+						Evaluate(v->Arguments[0], newScope, true), false);
 				}
 				
 				SValue* result = Evaluate(body, newScope);
@@ -225,9 +215,12 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 				{
 					delete value;
 					value = Evaluate(token, scope, true);
-					if (value->Type != ValueTypeNull ||
-							(value->Type == ValueTypeBoolean &&
-							((BooleanValue*)value)->Value))
+					if (value->Type == ValueTypeBoolean)
+					{
+						if (((BooleanValue*)value)->Value)
+							break;
+					}
+					else if (value->Type != ValueTypeNull)
 						break;
 				}
 				return value;
@@ -236,7 +229,13 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 			{
 				FunctionValue* f = (FunctionValue*)Evaluate(e->Function, scope);
 				if (f->Type != ValueTypeFunction)
-					die(f->String() << " is not a valid function");
+				{
+					if (e->Function->Type == TokenTypeVariable)
+						die("Cannot find function '" <<
+						       ((VariableToken*)(e->Function))->Name << "'");
+					else
+						die(f->String() << " is not a valid function");
+				}
 				
 				std::vector<SValue*> args;
 				args.resize(e->Arguments.size());
@@ -389,14 +388,17 @@ SValue* Scope::Get (std::string key)
 		return new NullValue();
 	return it->second->Copy();
 }
-void Scope::Set (std::string key, SValue* value)
+void Scope::Set (std::string key, SValue* value, bool copy)
 {
 	auto it = data.find(key);
 	if (it != data.end())
 	{
 		delete it->second;
 	}
-	data[key] = value->Copy();
+	if (copy)
+		data[key] = value->Copy();
+	else
+		data[key] = value;
 }
 bool Scope::Contains (std::string key)
 {

@@ -550,8 +550,7 @@ static SValue* proc_rand (std::vector<SValue*>& values)
 
 static void Register (Scope* scope, std::string name, SValue* v)
 {
-	scope->Set(name, v);
-	delete v;
+	scope->Set(name, v, false);
 }
 
 

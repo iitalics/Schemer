@@ -46,7 +46,7 @@ public:
 	
 	
 	SValue* Get (std::string key);
-	void Set (std::string key, SValue* value);
+	void Set (std::string key, SValue* value, bool copy = true);
 	bool Contains (std::string key);
 	
 	std::vector<SValue*> AllValues ();
