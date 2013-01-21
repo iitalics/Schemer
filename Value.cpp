@@ -9,6 +9,20 @@ int Stats_created = 0;
 int Stats_destroyed = 0;
 SValue::SValue () {Stats_created++;}
 SValue::~SValue () {Stats_destroyed++;}
+
+void showUsage ()
+{
+	std::cout << " :: Memory status :: " << std::endl;
+	if (Stats_created == Stats_destroyed)
+	{
+		std::cout << "Not leaking SValues" << std::endl;
+	}
+	else
+	{
+		std::cout << "!! Leaking " << (Stats_created - Stats_destroyed) << " SValues !!" << std::endl;
+	}
+}
+
 #else
 SValue::SValue () {}
 SValue::~SValue () {}

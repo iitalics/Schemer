@@ -3,7 +3,9 @@
 ;    Determines if a number is prime or not
 ; ==============================================
 
-(define (prime-iter n s m)
+(define (prime-iter n s m) ; n = number counting up to find factors of m
+                           ; s = sqrt of m (floored)
+                           ; m = number to see if prime
   (if (> n s)
       #t
       (if (= (% m n) 0)
@@ -12,11 +14,11 @@
                       s
                       m))))
 (define (is-prime n)
-  (if (and (!= n 2)
-           (= (% n 2) 0))
+  (if (and (!= n 2)			; even numbers that aren't 2 are  
+           (= (% n 2) 0))   ;   automatically prime
       #f
       (prime-iter 2
-                  (sqrt n)
+                  (floor (sqrt n))
                   n)))
 
 
@@ -27,11 +29,12 @@
                 (new-line)
                 (exit -1))
           n)))
-
+(define (get-input)
+  (validate-input (input)))
 
 (define (main)
   (last (display "Enter a number: ")
-        (let ((n (validate-input (input))))
+        (let ((n (get-input)))
              (if (null? n)
                  (last (new-line)
                        (exit))

@@ -136,10 +136,15 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 					die("Invalid 'if' statement, condition is not boolean type");
 				}
 				
+				SValue* result;
+				
 				if (((BooleanValue*)condition)->Value)
-					return Evaluate(e->Arguments[1], scope, true);
+					result = Evaluate(e->Arguments[1], scope, true);
 				else
-					return Evaluate(e->Arguments[2], scope, true);
+					result = Evaluate(e->Arguments[2], scope, true);
+				
+				delete condition;
+				return result;
 			}
 			else if (firstName == "lambda")
 			{
@@ -229,7 +234,6 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 			}
 			else
 			{
-				showUsage();
 				FunctionValue* f = (FunctionValue*)Evaluate(e->Function, scope);
 				if (f->Type != ValueTypeFunction)
 					die(f->String() << " is not a valid function");
@@ -246,7 +250,6 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 					delete *i;
 				
 				delete f;
-				showUsage();
 				
 				return result;
 			}

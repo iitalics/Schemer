@@ -81,6 +81,8 @@ static bool values_eql (SValue* a, SValue* b)
 	{
 		case ValueTypeNumber:
 			return (((NumberValue*)a)->Value) == (((NumberValue*)b)->Value);
+		case ValueTypeString:
+			return (((StringValue*)a)->Text) == (((StringValue*)b)->Text);
 		case ValueTypeBoolean:
 			return (((BooleanValue*)a)->Value) == (((BooleanValue*)b)->Value);
 		case ValueTypeNull: return true;
@@ -378,6 +380,10 @@ static SValue* proc_input_str (std::vector<SValue*>& values)
 }
 static SValue* proc_exit (std::vector<SValue*>& values)
 {
+#ifdef WATCH_MEMORY
+		showUsage();
+#endif
+	
 	if (values.size() == 0)
 		std::exit(0);
 	else if (values[0]->Type == ValueTypeNumber)
@@ -445,6 +451,38 @@ static SValue* proc_string_idx (std::vector<SValue*>& values)
 		return new NullValue();
 	return new NumberValue(s[i]);
 }
+
+
+static SValue* proc_string_sub (std::vector<SValue*>& values)
+{
+	if ((values.size() < 2 || values.size() > 3) ||
+		values[0]->Type != ValueTypeString ||
+		values[1]->Type != ValueTypeNumber)
+	{
+		die("Invalid arguments");
+	}
+	std::string s(((StringValue*)values[0])->Text);
+	unsigned int a = (unsigned int)((NumberValue*)values[1])->Value;
+	unsigned int b;
+	
+	if (a < 0 || a >= s.size())
+		return new StringValue("");
+	
+	if (values.size() == 3)
+	{
+		if ((b = (unsigned int)((NumberValue*)values[2])->Value) < 0)
+			return new NullValue();
+	}
+	else
+		b = s.size() - a;
+	
+	if ((b + a) > s.size()) b = s.size() - a;
+	
+	if (b <= 0) return new StringValue("");
+	
+	return new StringValue(s.substr(a, b));
+}
+
 static SValue* proc_string_len (std::vector<SValue*>& values)
 {
 	if (values.size() != 1 ||
@@ -510,76 +548,67 @@ static SValue* proc_rand (std::vector<SValue*>& values)
 
 
 
-static std::vector<SValue*> values;
+static void Register (Scope* scope, std::string name, SValue* v)
+{
+	scope->Set(name, v);
+	delete v;
+}
 
-template <class Q>
-static Q _PushValue (Q v)
-{
-	values.push_back(v);
-	return v;
-}
-#define PushValue(x) _PushValue<decltype(x)>(x)
-static NativeFunctionValue* MakeFunction (NativeFunctionHandler handler)
-{
-	return PushValue(new/**/NativeFunctionValue(handler));
-}
 
 void RegisterNativeFunctions (Scope* s)
 {
-	s->Set("+", MakeFunction(proc_add));
-	s->Set("-", MakeFunction(proc_sub));
-	s->Set("*", MakeFunction(proc_mult));
-	s->Set("/", MakeFunction(proc_div));
-	s->Set("^", MakeFunction(proc_pow));
-	s->Set("%", MakeFunction(proc_rem));
+	Register(s, "+", new NativeFunctionValue(proc_add));
+	Register(s, "-", new NativeFunctionValue(proc_sub));
+	Register(s, "*", new NativeFunctionValue(proc_mult));
+	Register(s, "/", new NativeFunctionValue(proc_div));
+	Register(s, "^", new NativeFunctionValue(proc_pow));
+	Register(s, "%", new NativeFunctionValue(proc_rem));
 	
-	s->Set("sqrt", MakeFunction(proc_sqrt));
-	s->Set("sin", MakeFunction(proc_sin));
-	s->Set("cos", MakeFunction(proc_cos));
-	s->Set("floor", MakeFunction(proc_floor));
-	s->Set("ceil", MakeFunction(proc_ceil));
+	Register(s, "sqrt", new NativeFunctionValue(proc_sqrt));
+	Register(s, "sin", new NativeFunctionValue(proc_sin));
+	Register(s, "cos", new NativeFunctionValue(proc_cos));
+	Register(s, "floor", new NativeFunctionValue(proc_floor));
+	Register(s, "ceil", new NativeFunctionValue(proc_ceil));
 	
-	s->Set("PI", PushValue(new NumberValue(3.14159265358979)));
+	Register(s, "PI", new NumberValue(3.14159265358979));
 	
-	s->Set("cons", MakeFunction(proc_cons));
-	s->Set("list", MakeFunction(proc_list));
-	s->Set("head", MakeFunction(proc_head));s->Set("car", MakeFunction(proc_head));
-	s->Set("tail", MakeFunction(proc_tail));s->Set("cdr", MakeFunction(proc_tail));
-	s->Set("index", MakeFunction(proc_idx));
-	s->Set("length", MakeFunction(proc_length));
+	Register(s, "cons", new NativeFunctionValue(proc_cons));
+	Register(s, "list", new NativeFunctionValue(proc_list));
+	Register(s, "head", new NativeFunctionValue(proc_head));Register(s, "car", new NativeFunctionValue(proc_head));
+	Register(s, "tail", new NativeFunctionValue(proc_tail));Register(s, "cdr", new NativeFunctionValue(proc_tail));
+	Register(s, "index", new NativeFunctionValue(proc_idx));
+	Register(s, "length", new NativeFunctionValue(proc_length));
 	
-	s->Set("null?", MakeFunction(proc_isnull));
-	s->Set("string?", MakeFunction(proc_isstring));
-	s->Set("pair?", MakeFunction(proc_ispair));
-	s->Set("number?", MakeFunction(proc_isnumber));
-	s->Set("bool?", MakeFunction(proc_isbool));
+	Register(s, "null?", new NativeFunctionValue(proc_isnull));
+	Register(s, "string?", new NativeFunctionValue(proc_isstring));
+	Register(s, "pair?", new NativeFunctionValue(proc_ispair));
+	Register(s, "number?", new NativeFunctionValue(proc_isnumber));
+	Register(s, "bool?", new NativeFunctionValue(proc_isbool));
 	
-	s->Set("string-at", MakeFunction(proc_string_idx));
-	s->Set("string", MakeFunction(proc_string));
-	s->Set("string-char", MakeFunction(proc_string_char));
-	s->Set("string-length", MakeFunction(proc_string_len));
+	Register(s, "string-at", new NativeFunctionValue(proc_string_idx));
+	Register(s, "string", new NativeFunctionValue(proc_string));
+	Register(s, "string-char", new NativeFunctionValue(proc_string_char));
+	Register(s, "string-length", new NativeFunctionValue(proc_string_len));
+	Register(s, "string-sub", new NativeFunctionValue(proc_string_sub));
 	
-	s->Set("=", MakeFunction(proc_eql));
-	s->Set("!=", MakeFunction(proc_neql));
-	s->Set("<", MakeFunction(proc_less));
-	s->Set("<=", MakeFunction(proc_lsse));
-	s->Set(">", MakeFunction(proc_grt));
-	s->Set(">=", MakeFunction(proc_grte));
+	Register(s, "=", new NativeFunctionValue(proc_eql));
+	Register(s, "!=", new NativeFunctionValue(proc_neql));
+	Register(s, "<", new NativeFunctionValue(proc_less));
+	Register(s, "<=", new NativeFunctionValue(proc_lsse));
+	Register(s, ">", new NativeFunctionValue(proc_grt));
+	Register(s, ">=", new NativeFunctionValue(proc_grte));
 	
-	s->Set("and", MakeFunction(proc_and));
-	s->Set("or", MakeFunction(proc_or));
-	s->Set("not", MakeFunction(proc_not));
+	Register(s, "and", new NativeFunctionValue(proc_and));
+	Register(s, "or", new NativeFunctionValue(proc_or));
+	Register(s, "not", new NativeFunctionValue(proc_not));
 	
 	
-	s->Set("display", MakeFunction(proc_display));
-	s->Set("new-line", MakeFunction(proc_newline));
-	s->Set("input", MakeFunction(proc_input));
-	s->Set("input-string", MakeFunction(proc_input_str));
-	s->Set("sleep", MakeFunction(proc_sleep));
-	s->Set("exit", MakeFunction(proc_exit));
-	s->Set("rand", MakeFunction(proc_rand));
+	Register(s, "display", new NativeFunctionValue(proc_display));
+	Register(s, "new-line", new NativeFunctionValue(proc_newline));
+	Register(s, "input", new NativeFunctionValue(proc_input));
+	Register(s, "input-string", new NativeFunctionValue(proc_input_str));
+	Register(s, "sleep", new NativeFunctionValue(proc_sleep));
+	Register(s, "exit", new NativeFunctionValue(proc_exit));
+	Register(s, "rand", new NativeFunctionValue(proc_rand));
 	
-	for (auto i = values.cbegin(); i != values.cend(); i++)
-		delete *i;
-	values.clear();
 }
