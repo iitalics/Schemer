@@ -582,13 +582,13 @@ void RegisterNativeFunctions (Scope* s)
 	Register(s, "string?", new NativeFunctionValue(proc_isstring));
 	Register(s, "pair?", new NativeFunctionValue(proc_ispair));
 	Register(s, "number?", new NativeFunctionValue(proc_isnumber));
-	Register(s, "bool?", new NativeFunctionValue(proc_isbool));
+	Register(s, "boolean?", new NativeFunctionValue(proc_isbool));
 	
-	Register(s, "string-at", new NativeFunctionValue(proc_string_idx));
+	Register(s, "string-ref", new NativeFunctionValue(proc_string_idx));
 	Register(s, "string", new NativeFunctionValue(proc_string));
-	Register(s, "string-char", new NativeFunctionValue(proc_string_char));
+	Register(s, "make-string", new NativeFunctionValue(proc_string_char));
 	Register(s, "string-length", new NativeFunctionValue(proc_string_len));
-	Register(s, "string-sub", new NativeFunctionValue(proc_string_sub));
+	Register(s, "substring", new NativeFunctionValue(proc_string_sub));
 	
 	Register(s, "=", new NativeFunctionValue(proc_eql));
 	Register(s, "!=", new NativeFunctionValue(proc_neql));
@@ -603,7 +603,7 @@ void RegisterNativeFunctions (Scope* s)
 	
 	
 	Register(s, "display", new NativeFunctionValue(proc_display));
-	Register(s, "new-line", new NativeFunctionValue(proc_newline));
+	Register(s, "newline", new NativeFunctionValue(proc_newline));
 	Register(s, "input", new NativeFunctionValue(proc_input));
 	Register(s, "input-string", new NativeFunctionValue(proc_input_str));
 	Register(s, "sleep", new NativeFunctionValue(proc_sleep));

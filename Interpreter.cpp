@@ -136,6 +136,31 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 				delete condition;
 				return result;
 			}
+			else if (firstName == "cond")
+			{
+				auto args = e->Arguments;
+				for (auto i = args.cbegin(); i != args.cend(); ++i)
+				{
+					BooleanValue* cond = (BooleanValue*)Evaluate(*i, scope, true);
+					
+					if (cond->Type != ValueTypeBoolean)
+						die("Invalid condition, '" << cond->String() << "' is not boolean type");
+					
+					bool cond_value = cond->Value;
+					delete cond;
+					
+					if ((i + 1) == args.cend())
+						die("Invalid condition at end of cond statement");
+					
+					Token* body = *(++i);
+					
+					if (cond_value)
+						return Evaluate(body, scope, true);
+				}
+				if (!requireOutput)
+					return NULL;
+				return new NullValue();
+			}
 			else if (firstName == "lambda")
 			{
 				if (e->Arguments.size() != 2)
