@@ -95,5 +95,15 @@ void displayToken (Token* t, int indent)
 		
 		std::cout << ")" << std::endl;
 	}
+	else if (t->Type == TokenTypeString)
+	{
+		std::cout << "\x1b[1m\"" << ((StringToken*)t)->Text << "\"\x1b[0m" << std::endl;
+	}
 	else std::cout << "(?)" << std::endl;
+}
+
+
+StringToken::StringToken (std::string text) : Text(text)
+{
+	Type = TokenTypeString;
 }

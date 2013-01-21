@@ -331,8 +331,18 @@ static SValue* proc_idx (std::vector<SValue*>& values)
 static SValue* proc_display (std::vector<SValue*>& values)
 {
 	for (auto i = values.begin(); i != values.end(); i++)
-		std::cout << (*i)->String() << std::endl;
-	return new NumberValue(0);
+	{
+		if ((*i)->Type == ValueTypeString)
+			std::cout << ((StringValue*)*i)->Text;
+		else
+			std::cout << (*i)->String();
+	}
+	return new NullValue();
+}
+static SValue* proc_newline (std::vector<SValue*>& values)
+{
+	std::cout << std::endl;
+	return new NullValue();
 }
 static SValue* proc_input (std::vector<SValue*>& values)
 {
@@ -356,6 +366,8 @@ static SValue* proc_exit (std::vector<SValue*>& values)
 		std::exit((int)(((NumberValue*)values[0])->Value));
 	else
 		die("Invalid arguments to exit");
+	
+	return new NullValue();
 }
 static SValue* proc_sleep (std::vector<SValue*>& values)
 {
@@ -445,6 +457,7 @@ void RegisterNativeFunctions (Scope* s)
 	
 	
 	s->Set("display", new NativeFunctionValue(proc_display));
+	s->Set("new-line", new NativeFunctionValue(proc_newline));
 	s->Set("input", new NativeFunctionValue(proc_input));
 	s->Set("sleep", new NativeFunctionValue(proc_sleep));
 	s->Set("exit", new NativeFunctionValue(proc_exit));

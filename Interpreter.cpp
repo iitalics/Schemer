@@ -67,6 +67,11 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 			return globalScope->Get(name);
 		}
 		
+		case TokenTypeString:
+		{
+			return new StringValue(((StringToken*)t)->Text);
+		}
+		
 		case TokenTypeExpression:
 		{
 			ExpressionToken* e = (ExpressionToken*)t;
@@ -182,6 +187,40 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 				SValue* result = Evaluate(body, newScope);
 				delete newScope;
 				return result;
+			}
+			else if (firstName == "last")
+			{
+				if (e->Arguments.size() == 0)
+				{
+					if (requireOutput)
+						return new NullValue();
+					return NULL;
+				}
+				SValue* last = NULL;
+				for (auto i = e->Arguments.begin(); i != e->Arguments.end(); i++)
+				{
+					delete last;
+					last = Evaluate(*i, scope, true);
+				}
+				return last;
+			}
+			else if (firstName == "repeat")
+			{
+				if (e->Arguments.size() != 1)
+					die("Expected only one argument");
+				
+				Token* token = e->Arguments[0];
+				SValue* value = NULL;
+				for (;;)
+				{
+					delete value;
+					value = Evaluate(token, scope, true);
+					if (value->Type != ValueTypeNull ||
+							(value->Type == ValueTypeBoolean &&
+							((BooleanValue*)value)->Value))
+						break;
+				}
+				return value;
 			}
 			else
 			{

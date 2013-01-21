@@ -1,46 +1,37 @@
-; ==========
-; 
-;   Usage: Enter each list item on seperate line, then enter
-;            blank line to finish the list
-;   A sorted version of the list will be displayed
-;
-; ==========
+; ==============================================
+;             ~ Prime calculator ~
+;    Determines if a number is prime or not
+; ==============================================
 
 
-(define (push A n)
-  (if (null? A)
-      (cons n nil)
-	  (cons (car A)
-	        (push (cdr A)
-			      n))))
-;
-
-(define (list-input-iter A I)
-  (if (null? I)
-      A
-	  (list-input-iter (push A I)
-	                   (input))))
-(define (list-input)
-  (list-input-iter nil (input)))
-;
-
-(define (sort-recur h T c)
-  (if (null? T)
-      (list h)
-	  (if (<= h (car T))
-	      (if c
-		      (cons h T)
-			  (sort-recur h
-			              (sort-recur (car T)
-						              (cdr T)
-									  #f)
-				          #t))
-		  (sort-recur (car T)
-		              (cons h (cdr T))
-					  #f))))
-(define (sort A)
-  (sort-recur (car A) (cdr A) #f))
-;
 
 
-(sort (list-input))
+(define (prime-iter n s m)
+  (if (> n s)
+      #t
+      (if (= (% m n) 0)
+          #f
+          (prime-iter (+ n 1)
+                      s
+                      m))))
+(define (is-prime n)
+  (if (and (!= n 2)
+           (= (% n 2) 0))
+      #f
+      (prime-iter 2
+                  (sqrt n)
+                  n)))
+
+
+(define (main)
+  (last (display "Enter a number: ")
+        (let ((n (input)))
+             (if (null? n)
+                 (last (new-line)
+                       (exit))
+                 (if (is-prime n)
+                     (display "'" n "' is a prime number")
+                     (display "'" n "' is not a prime number"))))
+        (new-line)))
+
+(repeat (main))

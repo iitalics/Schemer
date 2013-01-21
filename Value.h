@@ -13,6 +13,7 @@ enum ValueType
 	ValueTypeFunction = 2,
 	ValueTypePair = 3,
 	ValueTypeBoolean = 4,
+	ValueTypeString = 5,
 	ValueTypeNull = 0
 };
 enum FunctionType
@@ -119,4 +120,12 @@ public:
 	virtual std::string Name ();
 	
 	NativeFunctionHandler Handler;
+};
+
+class StringValue : public SValue
+{
+public:
+	StringValue (const std::string& text);
+	virtual SValue* Copy ();
+	std::string Text;
 };

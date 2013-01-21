@@ -115,6 +115,12 @@ BooleanValue::BooleanValue (bool b) : Value(b)
 }
 SValue* BooleanValue::Copy () { return new BooleanValue(Value); }
 
+StringValue::StringValue (const std::string& text) : Text(text)
+{
+	Type = ValueTypeString;
+}
+SValue* StringValue::Copy () { return new StringValue(Text); }
+
 
 
 
@@ -229,6 +235,13 @@ std::string SValue::String ()
 		
 		case ValueTypeBoolean:
 			return (((BooleanValue*)this)->Value) ? "#t" : "#f";
+		
+		case ValueTypeString:
+		{
+			std::stringstream ss;
+			ss << "\"" << ((StringValue*)this)->Text << "\"";
+			return ss.str();
+		}
 		
 		default: break;
 	}

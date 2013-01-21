@@ -2,7 +2,7 @@
 #include "Value.h"
 #include <fstream>
 
-class Token; class NumberToken; class ExpressionToken; class VariableToken;
+class Token; class NumberToken; class ExpressionToken; class VariableToken; class StringToken;
 
 
 class TokenFactory
@@ -15,6 +15,7 @@ public:
 	NumberToken* CreateNumberToken (const std::string& s);
 	VariableToken* CreateVariableToken (std::string s);
 	ExpressionToken* CreateExpressionToken (std::vector<Token*> tokens);
+	StringToken* CreateStringToken (const std::string& s);
 	
 	bool Empty ();
 	

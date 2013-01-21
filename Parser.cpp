@@ -52,6 +52,13 @@ ExpressionToken* TokenFactory::CreateExpressionToken (std::vector<Token*> tokens
 	others.push_back(t);
 	return t;
 }
+StringToken* TokenFactory::CreateStringToken (const std::string& s)
+{
+	// I'm lazy
+	StringToken* t = new StringToken(std::string(s));
+	others.push_back(t);
+	return t;
+}
 // >
 
 //#define DEBUGGING_PARSER
@@ -93,7 +100,15 @@ static inline bool isnum (char c)
 {
 	return isdigit(c) || c == '.';
 }
-
+static inline int hexd (char c)
+{
+	if (isdigit(c))
+		return (c - '0');
+	c = tolower(c);
+	if (c >= 'a' && c <= 'f')
+		return 0xa + (c - 'a');
+	return -1;
+}
 
 
 
@@ -216,6 +231,49 @@ Token* Parser::parseToken ()
 		next();
 		
 		return GetFactory()->CreateExpressionToken(tokens);
+	}
+	else if (char_eq(first(), '"'))
+	{
+		next();
+		char q, esc;
+		
+		std::stringstream ss;
+		
+		while ((q = next()) != '"')
+		{
+			if (q == '\\')
+				switch (esc = next())
+				{
+					case 'x':
+					{
+						char a, b;
+						a = next(); b = next();
+						
+						if (a < 0 || b < 0)
+							die("Invalid hexadecimal character");
+						
+						q = (hexd(a) << 4) + b;
+						break;
+					}
+					case '\\': q = '\\'; break;
+					case '\"': q = '\"'; break;
+					case '\'': q = '\''; break;
+					case 'n': q = '\n';  break;
+					case 'r': q = '\r';  break;
+					case 't': q = '\t';  break;
+					case 'b': q = '\b';  break;
+					case 'e': q = '\x1b';break;
+					default:
+						die("Unrecognized escape character '" << esc << "'");
+						break;
+				}
+			ss << q;
+			
+			//std::cout << "building string \x1b[1m" << ss.str() << "\x1b[0m" << std::endl;
+		}
+		std::string text = ss.str();
+		Token* t = GetFactory()->CreateStringToken(text);
+		return t;
 	}
 	else
 	{

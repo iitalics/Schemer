@@ -6,6 +6,7 @@ enum TokenType
 	TokenTypeNumber = 1,
 	TokenTypeVariable = 2,
 	TokenTypeExpression = 3,
+	TokenTypeString = 4,
 	TokenTypeNull = 0
 };
 
@@ -40,6 +41,14 @@ public:
 	
 	std::vector<std::string> Names (bool includeName = true);
 	bool IsDefine ();
+};
+
+class StringToken : public Token
+{
+public:
+	StringToken (std::string text);
+	
+	std::string Text;
 };
 
 
