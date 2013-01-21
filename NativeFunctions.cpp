@@ -228,7 +228,7 @@ static SValue* proc_sqrt (std::vector<SValue*>& values)
 {
 	if (values.size() != 1 || values[0]->Type != ValueTypeNumber)
 	{
-		die("Invalid arguments");
+		die("Invalid arguments to sqrt");
 	}
 	return new NumberValue(sqrt(((NumberValue*)values[0])->Value));
 }
@@ -236,7 +236,7 @@ static SValue* proc_sin (std::vector<SValue*>& values)
 {
 	if (values.size() != 1 || values[0]->Type != ValueTypeNumber)
 	{
-		die("Invalid arguments");
+		die("Invalid arguments to sin");
 	}
 	return new NumberValue(sin(((NumberValue*)values[0])->Value));
 }
@@ -244,7 +244,7 @@ static SValue* proc_cos (std::vector<SValue*>& values)
 {
 	if (values.size() != 1 || values[0]->Type != ValueTypeNumber)
 	{
-		die("Invalid arguments");
+		die("Invalid arguments to co");
 	}
 	return new NumberValue(cos(((NumberValue*)values[0])->Value));
 }
@@ -252,7 +252,7 @@ static SValue* proc_floor (std::vector<SValue*>& values)
 {
 	if (values.size() != 1 || values[0]->Type != ValueTypeNumber)
 	{
-		die("Invalid arguments");
+		die("Invalid arguments to floor");
 	}
 	return new NumberValue((int)(((NumberValue*)values[0])->Value));
 }
@@ -260,7 +260,7 @@ static SValue* proc_ceil (std::vector<SValue*>& values)
 {
 	if (values.size() != 1 || values[0]->Type != ValueTypeNumber)
 	{
-		die("Invalid arguments");
+		die("Invalid arguments to ceil");
 	}
 	Number value = (((NumberValue*)values[0])->Value);
 	
@@ -293,7 +293,7 @@ static SValue* proc_head (std::vector<SValue*>& values)
 {
 	if (values.size() != 1 || values[0]->Type != ValueTypePair)
 	{
-		die("Invalid arguments");
+		die("Invalid arguments to head/car");
 	}
 	return ((PairValue*)values[0])->Head->Copy();
 }
@@ -301,7 +301,7 @@ static SValue* proc_tail (std::vector<SValue*>& values)
 {
 	if (values.size() != 1 || values[0]->Type != ValueTypePair)
 	{
-		die("Invalid arguments");
+		die("Invalid arguments to tail/cdr");
 	}
 	return ((PairValue*)values[0])->Tail->Copy();
 }
@@ -311,7 +311,7 @@ static SValue* proc_idx (std::vector<SValue*>& values)
 		values[0]->Type != ValueTypePair ||
 		values[1]->Type != ValueTypeNumber)
 	{
-		die("Invalid arguments");
+		die("Invalid arguments to idx");
 	}
 	PairValue* pair = ((PairValue*)values[0]);
 	int i = (int)((NumberValue*)values[1])->Value;
@@ -327,6 +327,18 @@ static SValue* proc_idx (std::vector<SValue*>& values)
 		i--;
 	}
 	return pair->Head->Copy();
+}
+static SValue* proc_length (std::vector<SValue*>& values)
+{
+	if (values.size() != 1 ||
+			values[0]->Type != ValueTypePair)
+		die("Invalid arguments to length");
+	int length;
+	PairValue* pair = ((PairValue*)values[0]);
+	
+	for (length = 1; pair->Tail->Type == ValueTypePair; length++)
+		pair = (PairValue*)pair->Tail;
+	return new NumberValue(length);
 }
 static SValue* proc_display (std::vector<SValue*>& values)
 {
@@ -437,7 +449,7 @@ static SValue* proc_string_len (std::vector<SValue*>& values)
 {
 	if (values.size() != 1 ||
 		values[0]->Type != ValueTypeString)
-		die("Invalid arguments");
+		die("Invalid arguments to string-length");
 	std::string s(((StringValue*)values[0])->Text);
 	return new NumberValue(s.size());
 }
@@ -480,7 +492,18 @@ static SValue* proc_isnumber (std::vector<SValue*>& values)
 	if (values.size() != 1) die("Invalid arguments");
 	return new BooleanValue(values[0]->Type == ValueTypeNumber);
 }
-
+static SValue* proc_isbool (std::vector<SValue*>& values)
+{
+	if (values.size() != 1) die("Invalid arguments");
+	return new BooleanValue(values[0]->Type == ValueTypeBoolean);
+}
+static SValue* proc_rand (std::vector<SValue*>& values)
+{
+	Number n = rand() / (Number)RAND_MAX;
+	if (values.size() == 1 && values[0]->Type == ValueTypeNumber)
+		n *= ((NumberValue*)values[0])->Value;
+	return new NumberValue(n);
+}
 
 
 
@@ -508,10 +531,13 @@ void RegisterNativeFunctions (Scope* s)
 	s->Set("head", new NativeFunctionValue(proc_head));s->Set("car", new NativeFunctionValue(proc_head));
 	s->Set("tail", new NativeFunctionValue(proc_tail));s->Set("cdr", new NativeFunctionValue(proc_tail));
 	s->Set("index", new NativeFunctionValue(proc_idx));
+	s->Set("length", new NativeFunctionValue(proc_length));
+	
 	s->Set("null?", new NativeFunctionValue(proc_isnull));
 	s->Set("string?", new NativeFunctionValue(proc_isstring));
 	s->Set("pair?", new NativeFunctionValue(proc_ispair));
 	s->Set("number?", new NativeFunctionValue(proc_isnumber));
+	s->Set("bool?", new NativeFunctionValue(proc_isbool));
 	
 	s->Set("string-at", new NativeFunctionValue(proc_string_idx));
 	s->Set("string", new NativeFunctionValue(proc_string));
@@ -536,4 +562,5 @@ void RegisterNativeFunctions (Scope* s)
 	s->Set("input-string", new NativeFunctionValue(proc_input_str));
 	s->Set("sleep", new NativeFunctionValue(proc_sleep));
 	s->Set("exit", new NativeFunctionValue(proc_exit));
+	s->Set("rand", new NativeFunctionValue(proc_rand));
 }

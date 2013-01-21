@@ -4,7 +4,16 @@
 #include "Interpreter.h"
 
 
+#ifdef WATCH_MEMORY
+int Stats_created = 0;
+int Stats_destroyed = 0;
+SValue::SValue () {Stats_created++;}
+SValue::~SValue () {Stats_destroyed++;}
+#else
+SValue::SValue () {}
 SValue::~SValue () {}
+#endif
+
 
 
 /* **************** NumberValue *************** */

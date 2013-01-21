@@ -21,6 +21,8 @@ Interpreter::~Interpreter ()
 	{
 		delete *i;
 	}
+	
+	delete globalScope;
 }
 bool Interpreter::operator >> (std::string& s)
 {
@@ -239,6 +241,8 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 				for (auto i = args.begin(); i != args.end(); ++i)
 					delete *i;
 				
+				delete f;
+				
 				return result;
 			}
 			break;
@@ -384,7 +388,7 @@ void Scope::Set (std::string key, SValue* value)
 	{
 		delete it->second;
 	}
-	data[key] = value->Copy();
+	data[key] = value;//->Copy();
 }
 bool Scope::Contains (std::string key)
 {

@@ -133,5 +133,10 @@ int main (int argc, char** argv)
 			runCode();
 	}
 	
+#ifdef WATCH_MEMORY
+	std::cout << "SValues created:   " << Stats_created << std::endl << 
+	             "Svalues destroyed: " << Stats_destroyed << std::endl;
+#endif
+	
 	return EXIT_SUCCESS;
 }

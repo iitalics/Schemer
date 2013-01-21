@@ -1,11 +1,17 @@
 #pragma once
 
 
+//#define WATCH_MEMORY
+
 typedef long double Number;
 
 
 class Token;class ExpressionToken;class Interpreter;class Scope;
 
+#ifdef WATCH_MEMORY
+extern int Stats_created;
+extern int Stats_destroyed;
+#endif
 
 enum ValueType
 {
@@ -27,6 +33,7 @@ enum FunctionType
 class SValue
 {
 public:
+	SValue ();
 	ValueType Type;
 	virtual ~SValue ();
 	
