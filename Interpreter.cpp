@@ -388,7 +388,7 @@ void Scope::Set (std::string key, SValue* value)
 	{
 		delete it->second;
 	}
-	data[key] = value;//->Copy();
+	data[key] = value;//->Copy(); ??
 }
 bool Scope::Contains (std::string key)
 {
