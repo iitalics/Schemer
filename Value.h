@@ -11,6 +11,13 @@ class Token;class ExpressionToken;class Interpreter;class Scope;
 #ifdef WATCH_MEMORY
 extern int Stats_created;
 extern int Stats_destroyed;
+#define showUsage()	do\
+{\
+	std::cout << "SValues created:   " << Stats_created << std::endl << \
+	             "Svalues destroyed: " << Stats_destroyed << std::endl; \
+} while (0)
+#else
+#define showUsage() 
 #endif
 
 enum ValueType

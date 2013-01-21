@@ -509,58 +509,77 @@ static SValue* proc_rand (std::vector<SValue*>& values)
 
 
 
+
+static std::vector<SValue*> values;
+
+template <class Q>
+static Q _PushValue (Q v)
+{
+	values.push_back(v);
+	return v;
+}
+#define PushValue(x) _PushValue<decltype(x)>(x)
+static NativeFunctionValue* MakeFunction (NativeFunctionHandler handler)
+{
+	return PushValue(new/**/NativeFunctionValue(handler));
+}
+
 void RegisterNativeFunctions (Scope* s)
 {
-	s->Set("+", new NativeFunctionValue(proc_add));
-	s->Set("-", new NativeFunctionValue(proc_sub));
-	s->Set("*", new NativeFunctionValue(proc_mult));
-	s->Set("/", new NativeFunctionValue(proc_div));
-	s->Set("^", new NativeFunctionValue(proc_pow));
-	s->Set("%", new NativeFunctionValue(proc_rem));
+	s->Set("+", MakeFunction(proc_add));
+	s->Set("-", MakeFunction(proc_sub));
+	s->Set("*", MakeFunction(proc_mult));
+	s->Set("/", MakeFunction(proc_div));
+	s->Set("^", MakeFunction(proc_pow));
+	s->Set("%", MakeFunction(proc_rem));
 	
-	s->Set("sqrt", new NativeFunctionValue(proc_sqrt));
-	s->Set("sin", new NativeFunctionValue(proc_sin));
-	s->Set("cos", new NativeFunctionValue(proc_cos));
-	s->Set("floor", new NativeFunctionValue(proc_floor));
-	s->Set("ceil", new NativeFunctionValue(proc_ceil));
+	s->Set("sqrt", MakeFunction(proc_sqrt));
+	s->Set("sin", MakeFunction(proc_sin));
+	s->Set("cos", MakeFunction(proc_cos));
+	s->Set("floor", MakeFunction(proc_floor));
+	s->Set("ceil", MakeFunction(proc_ceil));
 	
-	s->Set("PI", new NumberValue(3.14159265358979));
+	s->Set("PI", PushValue(new NumberValue(3.14159265358979)));
 	
-	s->Set("cons", new NativeFunctionValue(proc_cons));
-	s->Set("list", new NativeFunctionValue(proc_list));
-	s->Set("head", new NativeFunctionValue(proc_head));s->Set("car", new NativeFunctionValue(proc_head));
-	s->Set("tail", new NativeFunctionValue(proc_tail));s->Set("cdr", new NativeFunctionValue(proc_tail));
-	s->Set("index", new NativeFunctionValue(proc_idx));
-	s->Set("length", new NativeFunctionValue(proc_length));
+	s->Set("cons", MakeFunction(proc_cons));
+	s->Set("list", MakeFunction(proc_list));
+	s->Set("head", MakeFunction(proc_head));s->Set("car", MakeFunction(proc_head));
+	s->Set("tail", MakeFunction(proc_tail));s->Set("cdr", MakeFunction(proc_tail));
+	s->Set("index", MakeFunction(proc_idx));
+	s->Set("length", MakeFunction(proc_length));
 	
-	s->Set("null?", new NativeFunctionValue(proc_isnull));
-	s->Set("string?", new NativeFunctionValue(proc_isstring));
-	s->Set("pair?", new NativeFunctionValue(proc_ispair));
-	s->Set("number?", new NativeFunctionValue(proc_isnumber));
-	s->Set("bool?", new NativeFunctionValue(proc_isbool));
+	s->Set("null?", MakeFunction(proc_isnull));
+	s->Set("string?", MakeFunction(proc_isstring));
+	s->Set("pair?", MakeFunction(proc_ispair));
+	s->Set("number?", MakeFunction(proc_isnumber));
+	s->Set("bool?", MakeFunction(proc_isbool));
 	
-	s->Set("string-at", new NativeFunctionValue(proc_string_idx));
-	s->Set("string", new NativeFunctionValue(proc_string));
-	s->Set("string-char", new NativeFunctionValue(proc_string_char));
-	s->Set("string-length", new NativeFunctionValue(proc_string_len));
+	s->Set("string-at", MakeFunction(proc_string_idx));
+	s->Set("string", MakeFunction(proc_string));
+	s->Set("string-char", MakeFunction(proc_string_char));
+	s->Set("string-length", MakeFunction(proc_string_len));
 	
-	s->Set("=", new NativeFunctionValue(proc_eql));
-	s->Set("!=", new NativeFunctionValue(proc_neql));
-	s->Set("<", new NativeFunctionValue(proc_less));
-	s->Set("<=", new NativeFunctionValue(proc_lsse));
-	s->Set(">", new NativeFunctionValue(proc_grt));
-	s->Set(">=", new NativeFunctionValue(proc_grte));
+	s->Set("=", MakeFunction(proc_eql));
+	s->Set("!=", MakeFunction(proc_neql));
+	s->Set("<", MakeFunction(proc_less));
+	s->Set("<=", MakeFunction(proc_lsse));
+	s->Set(">", MakeFunction(proc_grt));
+	s->Set(">=", MakeFunction(proc_grte));
 	
-	s->Set("and", new NativeFunctionValue(proc_and));
-	s->Set("or", new NativeFunctionValue(proc_or));
-	s->Set("not", new NativeFunctionValue(proc_not));
+	s->Set("and", MakeFunction(proc_and));
+	s->Set("or", MakeFunction(proc_or));
+	s->Set("not", MakeFunction(proc_not));
 	
 	
-	s->Set("display", new NativeFunctionValue(proc_display));
-	s->Set("new-line", new NativeFunctionValue(proc_newline));
-	s->Set("input", new NativeFunctionValue(proc_input));
-	s->Set("input-string", new NativeFunctionValue(proc_input_str));
-	s->Set("sleep", new NativeFunctionValue(proc_sleep));
-	s->Set("exit", new NativeFunctionValue(proc_exit));
-	s->Set("rand", new NativeFunctionValue(proc_rand));
+	s->Set("display", MakeFunction(proc_display));
+	s->Set("new-line", MakeFunction(proc_newline));
+	s->Set("input", MakeFunction(proc_input));
+	s->Set("input-string", MakeFunction(proc_input_str));
+	s->Set("sleep", MakeFunction(proc_sleep));
+	s->Set("exit", MakeFunction(proc_exit));
+	s->Set("rand", MakeFunction(proc_rand));
+	
+	for (auto i = values.cbegin(); i != values.cend(); i++)
+		delete *i;
+	values.clear();
 }

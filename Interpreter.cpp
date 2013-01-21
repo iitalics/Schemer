@@ -87,7 +87,7 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 			
 			if (firstName == "define")
 			{
-				SValue* result;
+				SValue* result = NULL;
 				
 				if (e->Arguments.size() != 2)
 					die("Invalid define syntax");
@@ -115,7 +115,10 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 					FunctionValue* function = new NormalFunctionValue(args, body);
 					globalScope->Set(name, function);
 					
-					result = function;
+					if (!requireOutput)
+						delete function;
+					else
+						result = function;
 				}
 				else die("Invalid define syntax");
 				
@@ -226,6 +229,7 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 			}
 			else
 			{
+				showUsage();
 				FunctionValue* f = (FunctionValue*)Evaluate(e->Function, scope);
 				if (f->Type != ValueTypeFunction)
 					die(f->String() << " is not a valid function");
@@ -242,6 +246,7 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 					delete *i;
 				
 				delete f;
+				showUsage();
 				
 				return result;
 			}
@@ -388,7 +393,7 @@ void Scope::Set (std::string key, SValue* value)
 	{
 		delete it->second;
 	}
-	data[key] = value;//->Copy(); ??
+	data[key] = value->Copy();
 }
 bool Scope::Contains (std::string key)
 {

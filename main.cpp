@@ -134,8 +134,7 @@ int main (int argc, char** argv)
 	}
 	
 #ifdef WATCH_MEMORY
-	std::cout << "SValues created:   " << Stats_created << std::endl << 
-	             "Svalues destroyed: " << Stats_destroyed << std::endl;
+	showUsage();
 #endif
 	
 	return EXIT_SUCCESS;
