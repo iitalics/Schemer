@@ -13,7 +13,7 @@
           (prime-iter (+ n 1)
                       s
                       m))))
-(define (is-prime n)
+(define (prime? n)
   (if (and (!= n 2)			; even numbers that aren't 2 are  
            (= (% n 2) 0))   ;   automatically prime
       #f
@@ -23,27 +23,27 @@
 
 
 (define (validate-input n)
-  (if (null? n) nil
-      (if (< n 0)
-          (last (display "Invalid negative number")
-                (new-line)
-                (exit -1))
-          n)))
+  (cond (null? n)
+        nil
+        (< n 0)
+        (do (display "Invalid negative number")
+            (exit -1))
+        #t n))
 (define (get-input)
   (validate-input (input)))
 
 (define (main)
-  (last (display "Enter a number: ")
-        (let ((n (get-input)))
-             (if (null? n)
-                 (last (new-line)
-                       (exit))
-                 (if (is-prime n)
-                     (display "'" n "' is a prime number")
-                     (display "'" n "' is not a prime number"))))
-        (new-line)))
+  (do (display "Enter a number: ")
+      (let ((n (get-input)))
+           (if (null? n)
+               (do (newline)
+                   (exit))
+               (if (prime? n)
+                   (display "'" n "' is a prime number")
+                   (display "'" n "' is not a prime number"))))
+      (newline)))
 
 
-(last (display " ==\nPrime number calculator v1.0\n ==")
-      (new-line) (new-line)
-      (repeat (main)))
+(do (display " ==\nPrime number calculator v1.0\n ==")
+    (newline) (newline)
+    (repeat (main)))
