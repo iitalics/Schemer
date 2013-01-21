@@ -188,7 +188,7 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 				delete newScope;
 				return result;
 			}
-			else if (firstName == "last")
+			else if (firstName == "last" || firstName == "do")
 			{
 				if (e->Arguments.size() == 0)
 				{

@@ -349,14 +349,20 @@ static SValue* proc_input (std::vector<SValue*>& values)
 	std::string line;
 	getline(std::cin, line);
 	
-	if (line.size() == 0 || line == "nil")
+	if (line.size() == 0)
 		return new NullValue();
-	if (line == "#t")
-		return new BooleanValue(true);
-	if (line == "#f")
-		return new BooleanValue(false);
 	
 	return new NumberValue(atof(line.c_str()));
+}
+static SValue* proc_input_str (std::vector<SValue*>& values)
+{
+	std::string line;
+	getline(std::cin, line);
+	
+	if (line.size() == 0)
+		return new NullValue();
+	
+	return new StringValue(line);
 }
 static SValue* proc_exit (std::vector<SValue*>& values)
 {
@@ -412,7 +418,68 @@ static SValue* proc_or (std::vector<SValue*>& values)
 	}
 	return new BooleanValue(false);
 }
-
+static SValue* proc_string_idx (std::vector<SValue*>& values)
+{
+	if (values.size() != 2 ||
+		values[0]->Type != ValueTypeString ||
+		values[1]->Type != ValueTypeNumber)
+	{
+		die("Invalid arguments");
+	}
+	unsigned int i = (unsigned int)((NumberValue*)values[1])->Value;
+	std::string s(((StringValue*)values[0])->Text);
+	
+	if (i < 0 || i >= s.size())
+		return new NullValue();
+	return new NumberValue(s[i]);
+}
+static SValue* proc_string_len (std::vector<SValue*>& values)
+{
+	if (values.size() != 1 ||
+		values[0]->Type != ValueTypeString)
+		die("Invalid arguments");
+	std::string s(((StringValue*)values[0])->Text);
+	return new NumberValue(s.size());
+}
+static SValue* proc_string (std::vector<SValue*>& values)
+{
+	std::stringstream ss;
+	for (auto i = values.cbegin(); i != values.cend(); i++)
+	{
+		if ((*i)->Type == ValueTypeString)
+			ss << (((StringValue*)*i)->Text);
+		else
+			ss << (*i)->String();
+	}
+	return new StringValue(ss.str());
+}
+static SValue* proc_string_char (std::vector<SValue*>& values)
+{
+	std::stringstream ss;
+	for (auto i = values.cbegin(); i != values.cend(); i++)
+	{
+		if ((*i)->Type != ValueTypeNumber)
+			die("Invalid non-number argument");
+		
+		ss << (char)(((NumberValue*)*i)->Value);
+	}
+	return new StringValue(ss.str());
+}
+static SValue* proc_isstring (std::vector<SValue*>& values)
+{
+	if (values.size() != 1) die("Invalid arguments");
+	return new BooleanValue(values[0]->Type == ValueTypeString);
+}
+static SValue* proc_ispair (std::vector<SValue*>& values)
+{
+	if (values.size() != 1) die("Invalid arguments");
+	return new BooleanValue(values[0]->Type == ValueTypePair);
+}
+static SValue* proc_isnumber (std::vector<SValue*>& values)
+{
+	if (values.size() != 1) die("Invalid arguments");
+	return new BooleanValue(values[0]->Type == ValueTypeNumber);
+}
 
 
 
@@ -442,7 +509,14 @@ void RegisterNativeFunctions (Scope* s)
 	s->Set("tail", new NativeFunctionValue(proc_tail));s->Set("cdr", new NativeFunctionValue(proc_tail));
 	s->Set("index", new NativeFunctionValue(proc_idx));
 	s->Set("null?", new NativeFunctionValue(proc_isnull));
+	s->Set("string?", new NativeFunctionValue(proc_isstring));
+	s->Set("pair?", new NativeFunctionValue(proc_ispair));
+	s->Set("number?", new NativeFunctionValue(proc_isnumber));
 	
+	s->Set("string-at", new NativeFunctionValue(proc_string_idx));
+	s->Set("string", new NativeFunctionValue(proc_string));
+	s->Set("string-char", new NativeFunctionValue(proc_string_char));
+	s->Set("string-length", new NativeFunctionValue(proc_string_len));
 	
 	s->Set("=", new NativeFunctionValue(proc_eql));
 	s->Set("!=", new NativeFunctionValue(proc_neql));
@@ -459,6 +533,7 @@ void RegisterNativeFunctions (Scope* s)
 	s->Set("display", new NativeFunctionValue(proc_display));
 	s->Set("new-line", new NativeFunctionValue(proc_newline));
 	s->Set("input", new NativeFunctionValue(proc_input));
+	s->Set("input-string", new NativeFunctionValue(proc_input_str));
 	s->Set("sleep", new NativeFunctionValue(proc_sleep));
 	s->Set("exit", new NativeFunctionValue(proc_exit));
 }

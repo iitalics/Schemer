@@ -3,9 +3,6 @@
 ;    Determines if a number is prime or not
 ; ==============================================
 
-
-
-
 (define (prime-iter n s m)
   (if (> n s)
       #t
@@ -23,9 +20,18 @@
                   n)))
 
 
+(define (validate-input n)
+  (if (null? n) nil
+      (if (< n 0)
+          (last (display "Invalid negative number")
+                (new-line)
+                (exit -1))
+          n)))
+
+
 (define (main)
   (last (display "Enter a number: ")
-        (let ((n (input)))
+        (let ((n (validate-input (input))))
              (if (null? n)
                  (last (new-line)
                        (exit))
@@ -34,4 +40,7 @@
                      (display "'" n "' is not a prime number"))))
         (new-line)))
 
-(repeat (main))
+
+(last (display " ==\nPrime number calculator v1.0\n ==")
+      (new-line) (new-line)
+      (repeat (main)))
