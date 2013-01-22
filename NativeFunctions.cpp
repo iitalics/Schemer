@@ -1,6 +1,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <unistd.h>
+#include <fstream>
 #include "includes.h"
 #include "Interpreter.h"
 
@@ -491,6 +492,27 @@ static SValue* proc_string_len (std::vector<SValue*>& values)
 	std::string s(((StringValue*)values[0])->Text);
 	return new NumberValue(s.size());
 }
+static SValue* proc_read_file (std::vector<SValue*>& values)
+{
+	if (values.size() != 1 ||
+		values[0]->Type != ValueTypeString)
+		die("Invalid arguments to string-length");
+	
+	std::stringstream ss;
+	std::fstream file(((StringValue*)values[0])->Text);
+	std::string line;
+	
+	if (!file.good())
+		return new NullValue();
+	
+	while (!file.eof())
+	{
+		std::getline(file, line);
+		ss << line << std::endl;
+	}
+	
+	return new StringValue(ss.str());
+}
 static SValue* proc_string (std::vector<SValue*>& values)
 {
 	std::stringstream ss;
@@ -644,6 +666,7 @@ void RegisterNativeFunctions (Scope* s)
 	Register(s, "not", new NativeFunctionValue(proc_not));
 	
 	
+	Register(s, "read-file", new NativeFunctionValue(proc_read_file));
 	Register(s, "display", new NativeFunctionValue(proc_display));
 	Register(s, "newline", new NativeFunctionValue(proc_newline));
 	Register(s, "input", new NativeFunctionValue(proc_input));

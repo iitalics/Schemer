@@ -250,6 +250,33 @@ SValue* Interpreter::Evaluate (Token* t, Scope* scope, bool requireOutput)
 				}
 				return value;
 			}
+			else if (firstName == "include")
+			{
+				if (e->Arguments.size() != 1)
+					die("Expected only one argument");
+				StringValue* s = (StringValue*)Evaluate(e->Arguments[0], scope, true);
+				
+				if (s->Type != ValueTypeString)
+					die("Include path should be string");
+				
+				std::string path = s->Text;
+				delete s;
+				
+				std::queue<Token*> oldTokens = tokens;
+				//while (!tokens.empty()) tokens.pop();
+				tokens = std::queue<Token*>();
+				
+				Parser parser;
+				std::fstream file(path);
+				parser.Parse(file);
+				LoadParser(parser);
+				
+				while (!oldTokens.empty())
+				{
+					tokens.push(oldTokens.back());
+					oldTokens.pop();
+				}
+			}
 			else
 			{
 				FunctionValue* f = (FunctionValue*)Evaluate(e->Function, scope);
