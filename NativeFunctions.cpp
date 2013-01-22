@@ -543,6 +543,47 @@ static SValue* proc_rand (std::vector<SValue*>& values)
 	return new NumberValue(n);
 }
 
+static SValue* proc_append (std::vector<SValue*>& values)
+{
+	std::vector<SValue*> items;
+	for (auto i = values.cbegin(); i != values.cend(); i++)
+	{
+		PairValue* pair = (PairValue*)*i;
+		if (pair->Type == ValueTypeNull) continue;
+		if (pair->Type != ValueTypePair)
+			items.push_back(*i);
+		else
+		{
+			if (pair->Tail->Type == ValueTypePair || pair->Tail->Type == ValueTypeNull)
+			{
+				items.push_back(pair->Head);
+				while (pair->Tail->Type == ValueTypePair)
+				{
+					pair = (PairValue*)(pair->Tail);
+					items.push_back(pair->Head);
+				}
+				if (pair->Tail->Type != ValueTypeNull)
+					items.push_back(pair->Tail);
+			}
+			else items.push_back(pair);
+		}
+	}
+	NullValue* nil = new NullValue();
+	
+	SValue* base = nil;
+	PairValue* pair = NULL;
+	for (auto i = items.cbegin(); i != items.cend(); i++)
+	{
+		PairValue* cur = new PairValue((*i)->Copy(), nil);
+		if (base == nil)
+			base = cur;
+		else
+			pair->Tail = cur;
+		pair = cur;
+	}
+	return base;
+}
+
 
 
 
@@ -577,6 +618,7 @@ void RegisterNativeFunctions (Scope* s)
 	Register(s, "tail", new NativeFunctionValue(proc_tail));Register(s, "cdr", new NativeFunctionValue(proc_tail));
 	Register(s, "index", new NativeFunctionValue(proc_idx));
 	Register(s, "length", new NativeFunctionValue(proc_length));
+	Register(s, "append", new NativeFunctionValue(proc_append));
 	
 	Register(s, "null?", new NativeFunctionValue(proc_isnull));
 	Register(s, "string?", new NativeFunctionValue(proc_isstring));
